@@ -1,0 +1,9 @@
+node_modules
+dist
+# capturas de revisão (regeneráveis pelos scripts; ~80 MB)
+captures
+# foto original: fica só na máquina local (o retrato processado está em public/photo/)
+WhatsApp Image*
+*.jpeg
+.venv
+__pycache__

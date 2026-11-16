@@ -1,0 +1,210 @@
+/* ── Linha clicável ───────────────────────────────────── */
+
+.rows tr.row { cursor: pointer; scroll-margin-top: calc(var(--bar-h) + 40px); }
+
+.row__btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.rows .result > span:first-child { display: inline-block; max-width: calc(100% - 40px); }
+
+.row__go {
+  float: right;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  margin-top: -2px;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 50%;
+  color: var(--ink-2);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.5s var(--ease-out), background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+@media (hover: hover) {
+  .rows tr.row:hover .row__go { border-color: var(--ink); color: var(--ink); }
+}
+
+.rows tr.row.is-open { background: var(--hover); }
+/* Sobre o fundo de hover, ink-3 cai para 4,41:1 (axe): sobe para ink-2. */
+.rows tr.row.is-open .n,
+.rows tr.row:hover .n { color: var(--ink-2); }
+.rows tr.row.is-open .n { box-shadow: inset 3px 0 0 0 var(--sel-line); }
+.rows tr.row.is-open .row__go {
+  transform: rotate(45deg);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+/* ── Painel do caso ("EXPLAIN" da linha) ──────────────── */
+
+.rows tbody tr.detail { border-bottom: 0; padding: 0; } /* fechado: sem linha dupla */
+.rows tr.detail > td { padding: 0; height: auto; border: 0; }
+.rows tr.detail:has(.case:not([hidden])) { border-bottom: var(--hair) solid var(--line); }
+
+.case { overflow: hidden; }
+
+.case__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  border-top: var(--hair) solid var(--line);
+}
+
+.case__text {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: calc(var(--pad) * 1.4) var(--pad) var(--pad);
+  border-right: var(--hair) solid var(--line);
+}
+
+.case__dl { display: flex; flex-direction: column; gap: 26px; margin: 0; }
+
+.case__item dt {
+  margin-bottom: 8px;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.case__item dd {
+  margin: 0;
+  max-width: 44ch;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 420;
+  line-height: 1.42;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.case__item--out dd {
+  font-size: clamp(1.3rem, 1.6vw, 1.6rem);
+  font-weight: 520;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.case__actions { display: flex; gap: 8px; margin-top: auto; }
+
+.case__art {
+  display: flex;
+  padding: calc(var(--pad) * 1.4) var(--pad) var(--pad);
+  background: repeating-linear-gradient(135deg, var(--hatch) 0 1px, transparent 1px 9px);
+}
+
+/* ── Janelas de artefato ──────────────────────────────── */
+
+.win {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.win__bar,
+.win__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+}
+
+.win__bar { height: 34px; border-bottom: var(--hair) solid var(--line); color: var(--ink-3); }
+.win__foot { min-height: 40px; border-top: var(--hair) solid var(--line); }
+.win__note { color: var(--ink-3); }
+
+.win--wip {
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: transparent;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+/* Terminal: sempre escuro (é como todo mundo reconhece um terminal; no papel vira pontuação forte). */
+.win--term {
+  --t-bg: #121110;
+  --t-ink: #ebe5d9;
+  --t-dim: #8a8478;
+  --t-line: rgba(235, 229, 217, 0.1);
+  background: var(--t-bg);
+  border-color: #2a2825;
+  color: var(--t-ink);
+}
+
+/* No tema escuro o terminal desceria ao mesmo fundo da página: fica um degrau mais escuro. */
+:root[data-theme='dark'] .win--term { --t-bg: #0a0908; border-color: #2f2c28; }
+
+.win--term .win__bar,
+.win--term .win__foot { border-color: var(--t-line); color: var(--t-dim); }
+.win--term .win__note { color: var(--t-dim); }
+.win--term .sbtn--ghost { color: var(--t-dim); }
+.win--term .sbtn--ghost:hover { color: var(--t-ink); }
+
+/* 18 linhas de saída cabem inteiras: o comando ($ python …) é o contexto da cena e não pode rolar para fora. */
+.term {
+  height: 400px;
+  margin: 0;
+  padding: 16px 16px 12px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.65;
+  white-space: pre;
+}
+
+.term .d { color: var(--t-dim); }
+.term .ok { color: var(--accent); }
+.term .pr { color: var(--accent); font-weight: 600; }
+.term .acc { background: var(--accent); color: var(--accent-ink); padding: 0 4px; }
+.term .caret { background: var(--accent); }
+
+@media (max-width: 1100px) {
+  /* minmax(0,1fr): "1fr" não encolhe abaixo do conteúdo, e as abas do navegador estouravam a tela. */
+  .case__grid { grid-template-columns: minmax(0, 1fr); }
+  .case__text { border-right: 0; border-bottom: var(--hair) solid var(--line); }
+}
+
+.rows tr.detail[hidden] { display: none; }
+
+@media (max-width: 760px) {
+  .rows tr.detail:not([hidden]) { display: block; }
+  .rows tr.detail > td { display: block; }
+  .row__go { position: absolute; right: var(--pad); top: 20px; float: none; }
+  .rows tbody tr.row { position: relative; }
+  .rows .name { padding-right: 40px; } /* não passa por baixo do botão + / × */
+  .rows .result > span:first-child { max-width: none; }
+  /* Barra de seleção na borda da linha (no mobile a célula do número não tem recuo). */
+  .rows tr.row.is-open .n,
+  .rows tr.row:hover .n { box-shadow: none; }
+  .rows tr.row.is-open { box-shadow: inset 3px 0 0 0 var(--sel-line); }
+  .case__art { padding: var(--pad); }
+  .term { height: auto; min-height: 300px; font-size: 0.66rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .win__foot { padding: 8px 12px; align-items: flex-end; }
+  .win__foot .sbtn { white-space: nowrap; flex: none; }
+}

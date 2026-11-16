@@ -1,0 +1,191 @@
+/* ── Destaque de sintaxe compartilhado (editor do hero e barra de query) ── */
+
+.qbar__code .k { color: var(--code-kw); font-weight: 600; }
+.qbar__code .i { color: var(--code-id); }
+.qbar__code .s { color: var(--code-str); }
+.qbar__code .p { color: var(--code-p); }
+
+/* ── Barra de query fixa ──────────────────────────────── */
+
+.qbar {
+  position: fixed;
+  top: var(--bar-h);
+  left: 0;
+  right: 0;
+  z-index: 9; /* atrás da barra de conexão: desliza de dentro dela */
+  height: 40px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  padding: 0 var(--pad);
+  background: var(--bg);
+  border-bottom: var(--hair) solid var(--line);
+  transform: translateY(-101%);
+  visibility: hidden;
+  transition: transform 0.6s var(--ease-out), visibility 0s linear 0.6s, background-color var(--dur-1) var(--ease-out);
+}
+
+.qbar.is-on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.6s var(--ease-out), visibility 0s, background-color var(--dur-1) var(--ease-out);
+}
+
+.qbar__label {
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.qbar__code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-ui);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qbar__status {
+  color: var(--ink-2);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.02em;
+}
+
+/* ── Seções ───────────────────────────────────────────── */
+
+.sec {
+  border-top: var(--hair) solid var(--line);
+  scroll-margin-top: calc(var(--bar-h) + 40px);
+}
+
+.sec__title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: calc(var(--pad) * 3) var(--pad) calc(var(--pad) * 1.2);
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.sec__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 10vw, 10rem);
+  font-weight: 520;
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+}
+
+/* "dbo." colado ao nome, na linha de base: lê-se como um identificador real (dbo.projetos). */
+.sec__schema {
+  margin-right: 0.02em;
+  font-family: var(--font-mono);
+  font-size: 0.2em;
+  font-weight: 400;
+  letter-spacing: -0.12em; /* o ponto mono ocupa a célula inteira; aproxima "dbo." do nome */
+  color: var(--ink-3);
+}
+
+.sec__sub {
+  max-width: 34ch;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.02em;
+  text-align: right;
+}
+
+/* ── Linhas de resultado (projetos) ───────────────────── */
+
+.rows {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.rows th {
+  height: 34px;
+  padding: 0 var(--pad);
+  border-bottom: var(--hair) solid var(--line);
+  color: var(--ink-2);
+  font-size: var(--fs-micro);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-align: left;
+}
+
+.rows th:nth-child(1) { width: 7%; }
+.rows th:nth-child(2) { width: 33%; }
+.rows th:nth-child(3) { width: 12%; }
+.rows th:nth-child(4) { width: 18%; }
+.rows th:nth-child(5) { width: 30%; }
+
+.rows tbody tr {
+  border-bottom: var(--hair) solid var(--line);
+  transition: background-color 0.3s var(--ease-out);
+}
+
+/* Só as linhas da lista (tr.row): sem isso, o painel aberto (tr.detail) também escurecia no hover. */
+@media (hover: hover) {
+  .rows tbody tr.row:hover { background: var(--hover); }
+  .rows tbody tr.row:hover .n { box-shadow: inset 3px 0 0 0 var(--sel-line); }
+}
+
+.rows td {
+  height: 92px;
+  padding: 0 var(--pad);
+  vertical-align: middle;
+}
+
+.rows .n {
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 0 var(--sel-line);
+  transition: box-shadow 0.3s var(--ease-out);
+}
+
+.rows .name {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.9vw, 1.9rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.rows .area span {
+  display: inline-block;
+  padding: 3px 10px;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 999px;
+  color: var(--ink-2);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rows .stack { color: var(--ink-2); }
+.rows .result { color: var(--ink); font-size: 0.875rem; }
+
+@media (max-width: 760px) {
+  .qbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .qbar__label { display: none; }
+
+  .sec__title-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .sec__sub { text-align: left; }
+
+  .rows thead { display: none; }
+  .rows,
+  .rows tbody { display: block; }
+  .rows tbody tr {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    padding: 20px var(--pad);
+  }
+  .rows td { height: auto; padding: 0; }
+  .rows .n { grid-row: 1 / span 4; }
+  .rows .area,
+  .rows .stack,
+  .rows .result { grid-column: 2; }
+}

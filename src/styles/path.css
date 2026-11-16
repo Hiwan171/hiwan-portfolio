@@ -1,0 +1,172 @@
+/* ── Seção 3: trajetória ──────────────────────────────── */
+
+.sec__title--statement {
+  max-width: 15ch;
+  font-size: clamp(2.4rem, 5.4vw, 6rem);
+  line-height: 0.95;
+}
+
+.path { position: relative; overflow: hidden; }
+
+.path__track {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: var(--pad);
+  transform-origin: 50% 50%;
+}
+
+/* Página = um ano */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: border-color 0.4s var(--ease-out);
+}
+
+.page.is-active { border-color: var(--ink-2); }
+
+.page__tab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 34px;
+  padding: 0 16px;
+  border-bottom: var(--hair) solid var(--line);
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Composição de página de livro: ano gigante embaixo à esquerda, eventos no alto à direita (diagonal). */
+.page__body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 32px;
+  padding: 28px 24px 22px;
+}
+
+.page__year {
+  align-self: end;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 11vw, 12rem);
+  font-weight: 520;
+  line-height: 0.78;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.page__items { align-self: start; }
+
+.page--now .page__year::after {
+  content: '';
+  display: inline-block;
+  width: 0.1em;
+  height: 0.1em;
+  margin-left: 0.08em;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: 0.62em;
+  animation: pulse 2.4s var(--ease-out) infinite;
+}
+
+.page__items {
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.page__items li { display: grid; gap: 4px; }
+
+.page__kind {
+  width: fit-content;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page__items strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.5vw, 1.45rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.page__where { color: var(--ink-2); font-size: 0.75rem; }
+
+.is-role strong { font-weight: 600; }
+.is-now .page__kind { padding: 1px 7px; background: var(--accent); color: var(--accent-ink); }
+
+.page__agg {
+  padding: 10px 16px;
+  border-top: var(--hair) solid var(--line);
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.page__agg span { color: var(--ink-2); }
+
+.path__axis { display: none; }
+
+/* ── Desktop: tela fixa, páginas na horizontal ────────── */
+
+.has-hpath .path {
+  height: calc(100svh - var(--bar-h) - 40px);
+  display: flex;
+  flex-direction: column;
+  border-top: var(--hair) solid var(--line);
+}
+
+.has-hpath .path__track {
+  flex: 1;
+  min-height: 0;
+  width: max-content;
+  flex-direction: row;
+  gap: 20px;
+  padding: 24px var(--pad) 18px;
+  will-change: transform;
+}
+
+.has-hpath .page { flex: none; width: min(56vw, 780px); }
+
+.has-hpath .path__axis {
+  display: block;
+  padding: 0 var(--pad) 20px;
+}
+
+.path__line { display: block; height: 2px; background: var(--line); }
+.path__fill { display: block; height: 100%; background: var(--ink); transform: scaleX(0); transform-origin: left; }
+
+.path__axis ol {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+.path__axis li { transition: color 0.3s var(--ease-out); }
+.path__axis li.is-active { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 760px) {
+  .page__body { grid-template-columns: 1fr; gap: 18px; padding: 22px 18px; }
+  .page__year { align-self: start; font-size: 4.5rem; }
+}

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hiwan — SELECT * FROM hiwan</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#ebe7de" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Hiwan desenvolve views SQL, automações em Python, dashboards Power BI e sistemas web que transformam dados espalhados em sistemas que funcionam." />
+    <script>
+      // Tema/idioma antes do primeiro paint (evita flash). Query string vence storage.
+      (function () {
+        var q = new URLSearchParams(location.search), d = document.documentElement, s = {};
+        try { s = JSON.parse(localStorage.getItem('hiwan:prefs') || '{}'); } catch (e) {}
+        d.dataset.theme = q.get('theme') || s.theme || 'light'; // padrão: claro (como o SQL Server); escuro é opcional
+        d.lang = (q.get('lang') || s.lang || 'pt') === 'en' ? 'en' : 'pt-BR';
+        // Tela de conexão: 1ª visita da sessão; ?boot/?bootat forçam; ?static e reduced-motion pulam.
+        var seen = false;
+        try { seen = sessionStorage.getItem('hiwan:connected') === '1'; } catch (e) {}
+        var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // ?at= (estudo de movimento do hero) também pula a tela de conexão.
+        if (!q.has('static') && !q.has('at') && !reduced && (q.has('boot') || q.has('bootat') || !seen)) d.dataset.boot = '';
+      })();
+    </script>
+  </head>
+  <body>
+    <!-- Tela de conexão (decorativa: nenhum campo é <input> real). -->
+    <div class="boot" aria-hidden="true">
+      <div class="boot__bar">
+        <span class="dot dot--off" data-boot-dot></span>
+        <span class="bar__db">hiwan.db</span>
+        <span class="bar__state" data-boot-state></span>
+      </div>
+      <span class="boot__skip" data-i18n="boot.skip"></span>
+
+      <div class="login" data-login>
+        <div class="login__head">
+          <span data-boot-title></span>
+          <span class="login__status" data-boot-status></span>
+        </div>
+        <div class="login__view" data-boot-view>
+          <!-- Formulário: mesma ordem de campos do diálogo de conexão do SSMS -->
+          <div data-boot-form>
+            <div class="login__body">
+              <span class="login__label" data-i18n="boot.serverType"></span>
+              <span class="field field--select field--muted"><span class="field__text" data-i18n="boot.serverTypeValue"></span><span class="field__chev">▾</span></span>
+              <span class="login__label" data-i18n="boot.serverName"></span>
+              <span class="field"><span class="field__text">hiwan.db</span></span>
+              <span class="login__label" data-i18n="boot.auth"></span>
+              <span class="field field--select"><span class="field__text" data-i18n="boot.authValue"></span><span class="field__chev">▾</span></span>
+              <span class="login__label" data-i18n="boot.login"></span>
+              <span class="field" data-field="login"></span>
+              <span class="login__label" data-i18n="boot.password"></span>
+              <span class="field field--pass" data-field="pass"></span>
+              <span></span>
+              <span class="check"><span class="check__box"></span><span data-i18n="boot.remember"></span></span>
+              <span class="login__label" data-i18n="boot.encrypt"></span>
+              <span class="field field--select"><span class="field__text" data-i18n="boot.encryptValue"></span><span class="field__chev">▾</span></span>
+              <span></span>
+              <span class="check is-on"><span class="check__box"></span><span data-i18n="boot.trust"></span></span>
+            </div>
+            <div class="login__foot">
+              <span class="sbtn sbtn--ghost" data-i18n="boot.options"></span>
+              <span class="login__btns">
+                <span class="sbtn" data-i18n="boot.cancel"></span>
+                <span class="sbtn sbtn--primary" data-boot-connect data-i18n="boot.connect"></span>
+              </span>
+            </div>
+          </div>
+          <!-- Pesquisador de Objetos: lampejo pós-conexão e prévia da navegação -->
+          <ul class="tree" data-boot-tree hidden></ul>
+        </div>
+        <span class="login__progress"><span data-boot-progress></span></span>
+      </div>
+
+      <ol class="boot__log" data-boot-log></ol>
+      <div class="boot__count"><span data-boot-count>000</span><small>%</small></div>
+    </div>
+    <span class="boot-scan" aria-hidden="true"></span>
+    <p class="sr-only" role="status" data-boot-sr></p>
+
+    <header class="bar" data-reveal="bar">
+      <div class="bar__conn">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="bar__db">hiwan.db</span>
+        <span class="bar__state" data-i18n="bar.state"></span>
+      </div>
+      <nav class="bar__nav" aria-label="Principal">
+        <a href="#projetos" data-i18n="nav.projects"></a>
+        <a href="#trajetoria" data-i18n="nav.path"></a>
+        <a href="#contato" data-i18n="nav.contact"></a>
+      </nav>
+      <div class="bar__tools">
+        <!-- Nome acessível contém o texto visível (WCAG 2.5.3) + a ação em texto oculto. -->
+        <button class="chip" type="button" data-action="lang">
+          <span class="kw">SET</span> LANG = <span class="str" data-lang-label></span>
+          <span class="sr-only" data-i18n="a11y.lang"></span>
+        </button>
+        <button class="chip chip--icon" type="button" data-action="theme">
+          <span class="theme-glyph" aria-hidden="true"></span>
+          <span class="sr-only" data-i18n="a11y.theme"></span>
+        </button>
+        <!-- Só no mobile: abre a árvore de tabelas (mesma linguagem do Pesquisador de Objetos) -->
+        <button class="chip chip--menu" type="button" data-action="menu" aria-expanded="false" aria-controls="menu">
+          <span data-i18n="menu.label"></span><span class="chip__chev" aria-hidden="true">▾</span>
+        </button>
+      </div>
+    </header>
+    <nav class="menu" id="menu" aria-label="Seções" hidden>
+      <div class="menu__root"><span class="dot" aria-hidden="true"></span>hiwan.db</div>
+      <!-- "dbo." e o nome no MESMO elemento: o gap do flex separava os dois -->
+      <a href="#projetos" class="menu__item"><span aria-hidden="true">▦</span><span>dbo.<span data-i18n="boot.tree.t1"></span></span></a>
+      <a href="#trajetoria" class="menu__item"><span aria-hidden="true">▦</span><span>dbo.<span data-i18n="boot.tree.t2"></span></span></a>
+      <a href="#contato" class="menu__item"><span aria-hidden="true">▦</span><span>dbo.<span data-i18n="boot.tree.t3"></span></span></a>
+    </nav>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="cell cell--editor">
+          <div class="cell__tab"><span>query.sql</span><span class="cell__tab-meta" data-i18n="editor.meta"></span></div>
+          <pre class="editor" aria-hidden="true"><code class="editor__gutter" data-gutter></code><code class="editor__code" data-query></code></pre>
+          <p class="sr-only" data-i18n="editor.sr"></p>
+          <div class="editor__status" data-status></div>
+        </div>
+
+        <h1 class="headline" id="hero-title" data-headline></h1>
+
+        <!-- Ponte em tela fixa (desktop): ocupa a mesma célula da headline quando a query vira a de projetos. -->
+        <div class="bridge-title" aria-hidden="true">
+          <span class="line"><span><small>dbo.</small><b data-bridge-name></b></span></span>
+          <span class="bridge-title__sub" data-i18n="bridge.sub"></span>
+        </div>
+
+        <figure class="cell cell--blob" data-blob>
+          <div class="cell__tab"><span data-i18n="blob.col"></span><span class="cell__tab-meta">BLOB</span></div>
+          <div class="blob">
+            <span class="blob__corner blob__corner--tl"></span>
+            <span class="blob__corner blob__corner--tr"></span>
+            <span class="blob__corner blob__corner--bl"></span>
+            <span class="blob__corner blob__corner--br"></span>
+            <figcaption class="blob__label" data-i18n="blob.label"></figcaption>
+          </div>
+        </figure>
+
+        <div class="cell cell--result">
+          <div class="cell__tab"><span data-i18n="result.tab"></span><span class="cell__tab-meta" data-i18n="result.meta"></span></div>
+          <table class="result" data-result></table>
+          <div class="actions">
+            <a class="btn btn--primary" href="#projetos"><span class="btn__glyph" aria-hidden="true">▸</span><span data-i18n="cta.projects"></span></a>
+            <a class="btn" href="#contato"><span data-i18n="cta.contact"></span></a>
+            <span class="actions__hint" data-i18n="cta.hint"></span>
+          </div>
+          <div class="bridge-handoff" aria-hidden="true">
+            <span data-bridge-count></span><span data-i18n="bridge.handoff"></span><span class="bridge-handoff__arrow">↓</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 2: a próxima query. O resultado é a lista de casos. -->
+      <section class="sec sec--projects" id="projetos" aria-labelledby="proj-title">
+        <header class="sec__head">
+          <div class="cell__tab"><span data-proj-table></span><span class="cell__tab-meta" data-proj-count></span></div>
+          <div class="sec__title-row">
+            <h2 class="sec__title" id="proj-title"><span class="sec__schema">dbo.</span><span data-proj-name></span></h2>
+            <p class="sec__sub" data-i18n="proj.sub"></p>
+          </div>
+        </header>
+        <table class="rows" data-proj-rows></table>
+      </section>
+
+      <!-- Seção 3: trajetória (GROUP BY ano). Desktop: tela fixa com páginas na horizontal. -->
+      <section class="sec sec--path" id="trajetoria" aria-labelledby="path-title">
+        <header class="sec__head">
+          <div class="cell__tab"><span data-path-table></span><span class="cell__tab-meta" data-path-count></span></div>
+          <div class="sec__title-row">
+            <h2 class="sec__title sec__title--statement" id="path-title" data-path-title></h2>
+            <p class="sec__sub" data-path-sub></p>
+          </div>
+        </header>
+        <div class="path" data-path>
+          <div class="path__track" data-path-track></div>
+          <div class="path__axis" aria-hidden="true">
+            <span class="path__line"><span class="path__fill"></span></span>
+            <ol data-path-ticks></ol>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Barra de query fixa: aparece quando o editor do hero sai da tela e reescreve a query por seção. -->
+    <div class="qbar" aria-hidden="true">
+      <span class="qbar__label">query.sql</span>
+      <code class="qbar__code" data-qbar-code></code>
+      <span class="qbar__status" data-qbar-status></span>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+/* ── Tokens ─────────────────────────────────────────────
+   Regra de cor: o acento é preenchimento (marca-texto, botão, ponto de status),
+   nunca texto corrido. Assim ele funciona nos dois temas. */
+
+:root {
+  --font-display: 'Funnel Display Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Limitado também pela altura: o hero inteiro (com botões) cabe em 1440×900. */
+  --fs-display: clamp(2.6rem, min(6.4vw, 9.4svh), 7.6rem);
+  --fs-code: clamp(0.875rem, 0.8rem + 0.25vw, 1rem);
+  --fs-ui: 0.8125rem;
+  --fs-micro: 0.6875rem;
+
+  --pad: clamp(16px, 1.8vw, 28px);
+  --bar-h: 52px;
+  --hair: 1px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 0.45s;
+  --dur-2: 0.9s;
+  --stagger: 0.045s;
+
+  --accent: #c8f23a;
+  --accent-ink: #12120f;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #121110;
+  --bg-2: #181715;
+  --ink: #ebe5d9;
+  --ink-2: #b3ada2;
+  --ink-3: #8a8478; /* ≥ 4.5:1 sobre --bg (WCAG AA) */
+  --line: rgba(235, 229, 217, 0.09);
+  --line-2: rgba(235, 229, 217, 0.2);
+  --code-kw: #ebe5d9;
+  --code-id: #b3ada2;
+  --code-str: #c8f23a;
+  --code-p: #8a8478;
+  --hatch: rgba(235, 229, 217, 0.05);
+  --surface: #1a1917;
+  --field: #121110;
+  --hover: rgba(235, 229, 217, 0.045);
+  --sel-line: var(--accent);
+  --shadow: 0 30px 70px -35px rgba(0, 0, 0, 0.7);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #ebe7de;
+  --bg-2: #e3ded3;
+  --ink: #141311;
+  --ink-2: #4a463f;
+  --ink-3: #69645a; /* ≥ 4.5:1 sobre --bg (WCAG AA) */
+  --line: rgba(20, 19, 17, 0.11);
+  --line-2: rgba(20, 19, 17, 0.26);
+  --code-kw: #141311;
+  --code-id: #4a463f;
+  --code-str: #4a6400;
+  --code-p: #69645a;
+  --hatch: rgba(20, 19, 17, 0.06);
+  --surface: #f5f2ec;
+  --field: #fbfaf7;
+  --hover: rgba(20, 19, 17, 0.04);
+  --sel-line: var(--ink); /* lima some no papel */
+  --shadow: 0 30px 70px -40px rgba(20, 19, 17, 0.35);
+}

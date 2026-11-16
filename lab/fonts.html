@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lab — fontes de display</title>
+    <style>
+      body { margin: 0; background: #121110; color: #ebe5d9; font-family: 'Geist Mono Variable', monospace; }
+      .row { display: grid; grid-template-columns: 220px 1fr; border-bottom: 1px solid rgba(235,229,217,.12); }
+      .name { padding: 20px; font-size: 12px; color: #a29c91; border-right: 1px solid rgba(235,229,217,.12); }
+      .spec { padding: 18px 24px; font-size: 64px; line-height: .95; letter-spacing: -0.04em; font-weight: 520; }
+      .mark { background: #c8f23a; color: #12120f; padding: 0 .05em; }
+    </style>
+  </head>
+  <body>
+    <div id="rows"></div>
+    <script type="module">
+      import '@fontsource-variable/geist-mono';
+      import '@fontsource-variable/funnel-display';
+      import '@fontsource-variable/bricolage-grotesque';
+      import '@fontsource-variable/schibsted-grotesk';
+      import '@fontsource-variable/host-grotesk';
+      import '@fontsource-variable/archivo';
+      import '@fontsource-variable/familjen-grotesk';
+      const fonts = [
+        ['Funnel Display (atual)', 'Funnel Display Variable', ''],
+        ['Bricolage Grotesque', 'Bricolage Grotesque Variable', ''],
+        ['Schibsted Grotesk', 'Schibsted Grotesk Variable', ''],
+        ['Host Grotesk', 'Host Grotesk Variable', ''],
+        ['Archivo (wdth 112)', 'Archivo Variable', "font-stretch:112%"],
+        ['Archivo (wdth 80)', 'Archivo Variable', "font-stretch:80%"],
+        ['Familjen Grotesk', 'Familjen Grotesk Variable', ''],
+      ];
+      document.getElementById('rows').innerHTML = fonts.map(([n, f, extra]) =>
+        `<div class="row"><div class="name">${n}</div><div class="spec" style="font-family:'${f}';${extra}">Transformo dados espalhados em <span class="mark">sistemas que funcionam.</span> 0123 SQL Qq Gg</div></div>`).join('');
+      document.fonts.ready.then(() => (window.__introDone = true));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,294 @@
+/* ── Tela de conexão ──────────────────────────────────── */
+
+.boot { display: none; }
+
+html[data-boot] body { overflow: hidden; }
+
+html[data-boot] .boot {
+  /* Centralização por grid: o GSAP converte translate(%) em px ao animar, o que quebrava no mobile. */
+  display: grid;
+  place-items: center;
+  padding: calc(var(--bar-h) + 16px) 16px 16px;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+/* Réplica exata de .bar__conn: no fim, a tela se recolhe e a barra real assume sem salto. */
+.boot__bar {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--pad);
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.dot--off {
+  background: var(--ink-3);
+  animation: none;
+}
+
+.boot__skip {
+  position: absolute;
+  top: 0;
+  right: var(--pad);
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+}
+
+/* Linha de varredura: nasce da barra de progresso do diálogo, cruza a tela para cima e
+   encaixa na borda inferior da barra do site. Fica fora de .boot para não ser recortada. */
+.boot-scan { display: none; }
+
+html[data-boot] .boot-scan {
+  display: block;
+  position: fixed;
+  z-index: 101;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 0 18px 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* No papel, lima sozinho some: a linha ganha um fio de tinta. */
+:root[data-theme='light'] .boot-scan {
+  box-shadow: 0 1px 0 0 var(--ink), 0 0 14px 1px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* Diálogo */
+
+.login {
+  position: relative;
+  width: min(480px, 100%);
+  overflow: hidden;
+  background: var(--surface);
+  border: var(--hair) solid var(--line-2);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+
+.login__head {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: var(--hair) solid var(--line);
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login__view { overflow: hidden; }
+
+.login__body {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 9px 14px;
+  padding: 18px 16px;
+}
+
+.login__label { color: var(--ink-2); }
+
+.field {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 3px;
+  background: var(--field);
+  color: var(--ink);
+  white-space: pre;
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+
+.field.is-active {
+  border-color: var(--ink-2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.field--select { justify-content: space-between; gap: 8px; }
+.field--muted { color: var(--ink-3); background: transparent; }
+.field__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.field__chev { flex: none; color: var(--ink-3); }
+
+/* Checkbox (decorativo) */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 22px;
+  color: var(--ink-2);
+}
+
+.check__box {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 2px;
+  background: var(--field);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.check.is-on .check__box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.check.is-on .check__box::before { content: '✓'; font-weight: 700; }
+
+/* Pesquisador de Objetos */
+.tree {
+  margin: 0;
+  padding: 14px 16px 18px;
+  list-style: none;
+}
+
+.tree li {
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: calc(var(--depth) * 18px);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.tree .g { width: 1ch; flex: none; color: var(--ink-3); text-align: center; }
+.tree .g--on { color: var(--accent); }
+:root[data-theme='light'] .tree .g--on { color: var(--code-str); }
+.tree .meta { color: var(--ink-3); font-size: var(--fs-micro); }
+.tree .tbl { color: var(--ink); }
+.tree .tbl .g { color: var(--ink-2); }
+.field--pass { font-size: 1.05rem; letter-spacing: 0.08em; }
+.field .caret { height: 1.1em; }
+
+.login__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: var(--hair) solid var(--line);
+}
+
+/* Status vive no cabeçalho (o rodapé é só dos botões, como no SSMS). */
+.login__status {
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.login__status.is-ok { color: var(--ink); }
+
+.login__btns { display: flex; gap: 8px; }
+
+.sbtn {
+  height: 30px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 3px;
+  color: var(--ink-2);
+  font-size: 0.75rem;
+  transition: transform 0.12s var(--ease-out), background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.sbtn--ghost { border-color: transparent; padding: 0 4px; color: var(--ink-3); }
+
+.sbtn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.sbtn--primary.is-pressed {
+  transform: scale(0.95);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.login__progress {
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+}
+
+.login__progress > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* Log e contador */
+
+.boot__log {
+  position: absolute;
+  left: var(--pad);
+  bottom: var(--pad);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  line-height: 1.9;
+  letter-spacing: 0.02em;
+}
+
+.boot__log li:last-child { color: var(--ink); }
+.boot__log .ts { margin-right: 1.6ch; opacity: 0.75; }
+
+.boot__count {
+  position: absolute;
+  right: var(--pad);
+  bottom: calc(var(--pad) * 0.5);
+  display: flex;
+  align-items: flex-start;
+  font-family: var(--font-mono);
+  font-size: clamp(4.5rem, 13vw, 12rem);
+  font-weight: 500;
+  line-height: 0.8;
+  letter-spacing: -0.07em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.boot__count small {
+  margin: 0.06em 0 0 0.12em;
+  font-size: 0.18em;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+@media (max-width: 760px) {
+  .boot__skip { display: none; }
+  .login__body { column-gap: 12px; }
+  .login { margin-bottom: 18vw; } /* deixa o contador respirar */
+  .login__body > span:empty { display: none; }
+  .login__body .check { grid-column: 1 / -1; }
+  .boot__log { display: none; } /* o diálogo maior não deixa espaço; o contador basta */
+  .boot__count { font-size: 24vw; }
+}
