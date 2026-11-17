@@ -98,7 +98,8 @@ Regra de corte: qualquer item abaixo de **7/10** na nossa autoavaliação volta 
 1c. Ponte hero → projetos: barra de query fixa que reescreve a query no scroll. ✔ v2
 2a. Projetos: linhas expansíveis ("EXPLAIN") + 5 artefatos (terminal, fila, view SQL, BI, navegador com sites reais). ✔ completo
 2b. Ponte hero → projetos em tela fixa. ✔ (decidido: fluxo vertical; tela fixa só aqui e na trajetória)
-3. Trajetória (`STRING_AGG … GROUP BY ano`), páginas horizontais em tela fixa. ✔
+3. Trajetória (`STRING_AGG … GROUP BY ano`). v2 (16/11): **gráfico em degraus** desenhado pelo scroll em tela fixa (substitui as páginas horizontais). ⏳ aprovação.
+2c. Projetos v2 (16/11): **lista | painel EXPLAIN com artefato vivo** (estilo SSMS; substitui a tabela de 5 colunas). ⏳ aprovação.
 4. Contato (`INSERT INTO contato` / `COMMIT`). ⏳ próximo.
 2. Barra de query fixa + navegação por scroll.
 3. Projetos (`WHERE`) + janela de artefato (começar por um: navegador).

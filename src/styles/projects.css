@@ -1,0 +1,230 @@
+/* ── Seção 2: result set como o SSMS — lista de linhas | painel de resultado ── */
+
+.proj { border-top: var(--hair) solid var(--line); }
+
+.proj__list { margin: 0; padding: 0; list-style: none; }
+
+.prow {
+  position: relative;
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.prow__btn {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  padding: calc(var(--pad) * 1.6) var(--pad);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Seletor de linha do SSMS: barra na borda esquerda. */
+.prow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--sel-line);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.prow__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+}
+
+.prow__n { font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.prow__area {
+  padding: 2px 9px;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.prow__stack { letter-spacing: 0.02em; }
+
+.prow__name {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3vw, 3.2rem);
+  font-weight: 520;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.prow__kpi { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; }
+
+/* O número é o "uau" da linha; o marca-texto lima aparece quando a linha está ativa (acento como preenchimento). */
+.prow__kpi b {
+  isolation: isolate;
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 5.6vw, 6.4rem);
+  font-weight: 560;
+  line-height: 0.8;
+  letter-spacing: -0.055em;
+  font-variant-numeric: tabular-nums;
+}
+.prow__kpi b::after {
+  content: '';
+  position: absolute;
+  left: -0.04em;
+  right: -0.04em;
+  bottom: -0.02em;
+  height: 0.26em;
+  z-index: -1;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s var(--ease-out) 0.1s;
+}
+.prow__kpi > span { max-width: 26ch; color: var(--ink-2); font-size: var(--fs-micro); letter-spacing: 0.02em; }
+
+/* Vazio e sem altura reservada (antes da 1ª montagem): some. Depois de desmontado, guarda a altura. */
+.prow__inline:empty:not([style*='min-height']) { display: none; }
+.prow__inline { display: flex; padding: 0 var(--pad) var(--pad); }
+
+.prow__case { padding: 0 var(--pad) calc(var(--pad) * 1.2); }
+.prow__case summary {
+  width: fit-content;
+  padding: 6px 12px;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 999px;
+  color: var(--ink-2);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+.prow__case summary::-webkit-details-marker { display: none; }
+.prow__case summary::after { content: ' +'; }
+.prow__case[open] summary::after { content: ' −'; }
+.prow__case dl { display: grid; gap: 16px; margin: 18px 0 0; }
+
+.prow__case dt,
+.proj__explain dt {
+  margin-bottom: 6px;
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.prow__case dd,
+.proj__explain dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.proj__pane { display: none; }
+
+/* ── Desktop: lista | painel preso ao lado ────────────── */
+
+@media (min-width: 1101px) {
+  .proj {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .proj__list { border-right: var(--hair) solid var(--line); }
+
+  .prow {
+    min-height: max(44svh, 340px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Linhas fora de foco recuam: a ativa é a única em tinta cheia (foco de leitura, como a linha selecionada). */
+  /* Por cor, não opacidade: o texto grande apagado fica em ≥3:1 e o pequeno em ink-3 (≥4.5:1), WCAG AA. */
+  .prow__name,
+  .prow__kpi b { color: var(--ink-dim); transition: color 0.5s var(--ease-out); }
+  .prow__kpi > span,
+  .prow__n { color: var(--ink-3); transition: color 0.5s var(--ease-out); }
+  .prow__btn:hover :is(.prow__name, .prow__kpi b),
+  .prow__btn:focus-visible :is(.prow__name, .prow__kpi b) { color: var(--ink-2); }
+  .prow.is-active :is(.prow__name, .prow__kpi b) { color: var(--ink); }
+  .prow.is-active :is(.prow__kpi > span, .prow__n) { color: var(--ink-2); }
+  .prow.is-active::before { transform: none; }
+
+  /* Respiro depois da última linha: o painel fica inteiro enquanto ela está ativa. */
+  .proj__list::after { content: ''; display: block; height: max(0px, calc(45svh - max(22svh, 170px))); }
+  .prow.is-active .prow__kpi b::after { transform: none; }
+
+  .prow__inline,
+  .prow__case { display: none; }
+
+  .proj__pane {
+    position: sticky;
+    top: calc(var(--bar-h) + 40px);
+    height: calc(100svh - var(--bar-h) - 40px);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .proj__stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    padding: calc(var(--pad) * 1.2) calc(var(--pad) * 1.4);
+    overflow: hidden;
+    background: repeating-linear-gradient(135deg, var(--hatch) 0 1px, transparent 1px 9px);
+  }
+
+  .proj__fit { display: flex; transform-origin: top left; }
+
+  /* Linha de varredura (mesmo gesto da tela de conexão). */
+  .proj__scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 18px 2px color-mix(in srgb, var(--accent) 55%, transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .proj__explain {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    border-top: var(--hair) solid var(--line);
+  }
+  .proj__explain > div { padding: 16px var(--pad) 20px; }
+  .proj__explain > div + div { border-left: var(--hair) solid var(--line); }
+  .proj__explain dd { font-size: 0.875rem; line-height: 1.38; }
+  .proj__explain .is-out dd { font-weight: 560; }
+}
+
+/* Telas baixas: o caso em 3 colunas não pode roubar a altura do artefato. */
+@media (min-width: 1101px) and (max-height: 820px) {
+  .proj__explain > div { padding: 12px var(--pad) 14px; }
+  .proj__explain dd { font-size: 0.8125rem; }
+}
+
+@media (max-width: 760px) {
+  .prow__btn { gap: 14px; padding: 28px var(--pad) 22px; }
+  .prow__top { flex-wrap: wrap; gap: 8px 12px; }
+  .prow__stack { flex-basis: 100%; }
+  .prow__inline { padding: 0 0 var(--pad); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prow::before, .prow__kpi b::after, .prow__top, .prow__name, .prow__kpi { transition: none; }
+}

@@ -33,6 +33,7 @@
   --ink: #ebe5d9;
   --ink-2: #b3ada2;
   --ink-3: #8a8478; /* ≥ 4.5:1 sobre --bg (WCAG AA) */
+  --ink-dim: #67625b; /* só texto grande (≥24px): ≥ 3:1 sobre --bg */
   --line: rgba(235, 229, 217, 0.09);
   --line-2: rgba(235, 229, 217, 0.2);
   --code-kw: #ebe5d9;
@@ -54,6 +55,7 @@
   --ink: #141311;
   --ink-2: #4a463f;
   --ink-3: #69645a; /* ≥ 4.5:1 sobre --bg (WCAG AA) */
+  --ink-dim: #847f76; /* só texto grande (≥24px): ≥ 3:1 sobre --bg */
   --line: rgba(20, 19, 17, 0.11);
   --line-2: rgba(20, 19, 17, 0.26);
   --code-kw: #141311;

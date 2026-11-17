@@ -550,6 +550,22 @@
 .bridge-handoff > span:first-child { color: var(--ink); font-weight: 600; }
 .bridge-handoff__arrow { display: inline-block; animation: nudge 1.8s var(--ease-in-out) infinite; }
 
+/* Tela fixa da ponte por CSS: o hero gruda sob a barra enquanto o espaçador rola (--bridge-len vem do bridge.ts). */
+/* ::after e não padding: o sticky fica preso à caixa de CONTEÚDO do espaçador (o padding não conta). */
+.has-bridge .hero-spacer::after { content: ''; display: block; height: var(--bridge-len, 0px); }
+.has-bridge .hero { position: sticky; top: var(--bar-h); }
+
+/* Com a ponte, a lista sobe por cima da faixa do aviso: a aba "resultado · 5 linhas" do hero vira o
+   cabeçalho das linhas e não sobra faixa morta depois que a tela solta (auditoria 12, D2).
+   --handoff-h vem do bridge.ts (altura da célula de resultado sem a aba). */
+.has-bridge .sec--projects {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-1 * var(--handoff-h, 0px));
+  border-top: 0;
+  background: var(--bg);
+}
+
 /* Com a ponte, título e aba de projetos vêm do hero: os da seção ficam só para leitores de tela. */
 .has-bridge .sec--projects .sec__head .cell__tab { display: none; }
 .has-bridge .sec--projects .sec__title-row {

@@ -25,6 +25,8 @@ export type Artifact = 'terminal' | 'queue' | 'view' | 'bi' | 'browser';
 /** Uma linha de projeto + o caso completo que abre ao clicar. */
 type Row = {
   name: string; area: string; stack: string; result: string;
+  /** Número de impacto (só fatos confirmados em docs/01-cases.md) + legenda curta. */
+  kpi: [string, string];
   artifact: Artifact;
   problem: string; solution: string; outcome: string;
 };
@@ -66,6 +68,8 @@ export const dict: Record<Lang, Dict> = {
       'case.problem': 'problema',
       'case.solution': 'solução',
       'case.outcome': 'resultado',
+      'proj.read': 'ler o caso',
+      'proj.pane': 'resultado da linha selecionada',
       'case.close': 'fechar',
       'case.next': 'próximo caso',
       'case.replay': '↻ executar de novo',
@@ -98,6 +102,7 @@ export const dict: Record<Lang, Dict> = {
       'boot.tree.t2': 'trajetoria',
       'boot.tree.t3': 'contato',
       'boot.skip': 'clique para pular',
+      'boot.skipTouch': 'toque para pular',
       'boot.off': '· desconectado',
       'boot.on': '· conectado',
       'boot.wait': 'aguardando credenciais',
@@ -141,6 +146,7 @@ export const dict: Record<Lang, Dict> = {
       rows: [
         {
           name: 'Cadastrador automático no Uplog', area: 'automação', stack: 'Python · SQL Server · API', result: '~10 s por registro (antes 5–10 min)',
+          kpi: ['30–60×', 'mais rápido · ~10 s por registro'],
           artifact: 'terminal',
           problem: 'Na migração de ERP, cada cliente e usuário precisava ser recadastrado à mão no Uplog: de 5 a 10 minutos por registro.',
           solution: 'Um cadastrador em Python que lê uma view no SQL Server e sobe os registros, um a um, pela API do Uplog. Feito por iniciativa própria.',
@@ -148,6 +154,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Envio de e-mail em massa', area: 'automação', stack: 'Python', result: 'Substituiu um serviço pago terceirizado',
+          kpi: ['100%', 'interno · substituiu um serviço pago'],
           artifact: 'queue',
           problem: 'O envio de e-mails em massa dependia de uma empresa terceirizada, contratada e paga.',
           solution: 'Uma aplicação própria em Python que faz os envios internamente.',
@@ -155,6 +162,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Views SQL de gestão', area: 'dados', stack: 'SQL Server', result: 'Todas as áreas, da diretoria aos gestores',
+          kpi: ['5', 'áreas atendidas · da diretoria aos gestores'],
           artifact: 'view',
           problem: 'Diretoria e gestores precisam enxergar informações que estão distribuídas em várias tabelas.',
           solution: 'Views em SQL Server com joins e regras de negócio em CASE, montadas sob demanda e entregues prontas em .xls.',
@@ -162,6 +170,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Dashboards Power BI', area: 'bi', stack: 'Power BI · SQL Server', result: 'Contas a pagar, faturamento, não coleta',
+          kpi: ['3', 'painéis em uso'],
           artifact: 'bi',
           problem: 'A gestão precisa acompanhar contas a pagar, faturamento de clientes e os motivos de coletas não realizadas.',
           solution: 'Dashboards em Power BI alimentados pelas views SQL.',
@@ -169,6 +178,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Landing pages de vendas', area: 'web', stack: 'React', result: '4 sites no ar, campanhas gerando leads',
+          kpi: ['4', 'sites no ar · campanhas gerando leads'],
           artifact: 'browser',
           problem: 'O grupo precisava de páginas de venda para os serviços de coleta de resíduos perigosos, uma para cada marca.',
           solution: 'Quatro landing pages em React, uma identidade por marca: Colefar, Ambientec, Colenorte e Biocoletas.',
@@ -181,7 +191,7 @@ export const dict: Record<Lang, Dict> = {
     text: {
       'bar.state': '· connected',
       'nav.projects': 'projects',
-      'nav.path': 'path',
+      'nav.path': 'career',
       'nav.contact': 'contact',
       'editor.meta': 'SQL Server',
       'editor.sr': "SELECT * FROM hiwan WHERE focus IN ('data', 'automation', 'systems');",
@@ -206,6 +216,8 @@ export const dict: Record<Lang, Dict> = {
       'case.problem': 'problem',
       'case.solution': 'solution',
       'case.outcome': 'outcome',
+      'proj.read': 'read the case',
+      'proj.pane': 'selected row result',
       'case.close': 'close',
       'case.next': 'next case',
       'case.replay': '↻ run again',
@@ -237,6 +249,7 @@ export const dict: Record<Lang, Dict> = {
       'boot.tree.t2': 'career',
       'boot.tree.t3': 'contact',
       'boot.skip': 'click to skip',
+      'boot.skipTouch': 'tap to skip',
       'boot.off': '· disconnected',
       'boot.on': '· connected',
       'boot.wait': 'awaiting credentials',
@@ -280,6 +293,7 @@ export const dict: Record<Lang, Dict> = {
       rows: [
         {
           name: 'Automated record loader for Uplog', area: 'automation', stack: 'Python · SQL Server · API', result: '~10 s per record (was 5–10 min)',
+          kpi: ['30–60×', 'faster · ~10 s per record'],
           artifact: 'terminal',
           problem: 'During an ERP migration, every customer and user had to be re-entered into Uplog by hand: 5 to 10 minutes per record.',
           solution: 'A Python loader that reads a SQL Server view and pushes each record through the Uplog API. Built on my own initiative.',
@@ -287,6 +301,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Bulk email sender', area: 'automation', stack: 'Python', result: 'Replaced a paid third-party service',
+          kpi: ['100%', 'in-house · replaced a paid service'],
           artifact: 'queue',
           problem: 'Bulk email depended on an outside company, hired and paid for the job.',
           solution: 'An in-house Python application that does the sending.',
@@ -294,6 +309,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Management SQL views', area: 'data', stack: 'SQL Server', result: 'Every department, board to managers',
+          kpi: ['5', 'departments served · board to managers'],
           artifact: 'view',
           problem: 'The board and managers need to see information spread across many tables.',
           solution: 'SQL Server views with joins and CASE business rules, built on request and delivered ready as .xls.',
@@ -301,6 +317,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Power BI dashboards', area: 'bi', stack: 'Power BI · SQL Server', result: 'Payables, billing, missed pickups',
+          kpi: ['3', 'dashboards in use'],
           artifact: 'bi',
           problem: 'Management needs to track payables, customer billing and the reasons pickups were missed.',
           solution: 'Power BI dashboards fed by the SQL views.',
@@ -308,6 +325,7 @@ export const dict: Record<Lang, Dict> = {
         },
         {
           name: 'Sales landing pages', area: 'web', stack: 'React', result: '4 sites live, campaigns bringing leads',
+          kpi: ['4', 'sites live · campaigns bringing leads'],
           artifact: 'browser',
           problem: 'The group needed sales pages for its hazardous waste collection services, one per brand.',
           solution: 'Four React landing pages, one identity per brand: Colefar, Ambientec, Colenorte and Biocoletas.',

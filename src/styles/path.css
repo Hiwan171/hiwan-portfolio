@@ -1,172 +1,234 @@
-/* ── Seção 3: trajetória ──────────────────────────────── */
+/* ── Seção 3: trajetória como gráfico ─────────────────── */
 
-.sec__title--statement {
-  max-width: 15ch;
-  font-size: clamp(2.4rem, 5.4vw, 6rem);
-  line-height: 0.95;
+.climb { position: relative; display: flex; flex-direction: column; background: var(--bg); }
+
+.climb__stage {
+  position: relative;
+  height: min(78svh, 720px);
+  min-height: 460px;
+  overflow: hidden;
 }
 
-.path { position: relative; overflow: hidden; }
-
-.path__track {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: var(--pad);
-  transform-origin: 50% 50%;
+/* Título no canto vazio do gráfico (a linha sobe da esquerda-baixo para a direita-alto). */
+.climb__head {
+  position: absolute;
+  top: calc(var(--pad) * 1.6);
+  left: var(--pad);
+  z-index: 2;
+  max-width: min(46vw, 640px);
+  pointer-events: none;
 }
 
-/* Página = um ano */
-.page {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border: var(--hair) solid var(--line-2);
-  border-radius: 6px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  transition: border-color 0.4s var(--ease-out);
-}
-
-.page.is-active { border-color: var(--ink-2); }
-
-.page__tab {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 34px;
-  padding: 0 16px;
-  border-bottom: var(--hair) solid var(--line);
-  color: var(--ink-3);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* Composição de página de livro: ano gigante embaixo à esquerda, eventos no alto à direita (diagonal). */
-.page__body {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 32px;
-  padding: 28px 24px 22px;
-}
-
-.page__year {
-  align-self: end;
+.climb__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(5rem, 11vw, 12rem);
+  font-size: clamp(2.4rem, min(5vw, 8.4svh), 5.6rem);
   font-weight: 520;
-  line-height: 0.78;
-  letter-spacing: -0.06em;
-  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
 }
 
-.page__items { align-self: start; }
-
-.page--now .page__year::after {
-  content: '';
-  display: inline-block;
-  width: 0.1em;
-  height: 0.1em;
-  margin-left: 0.08em;
-  border-radius: 50%;
-  background: var(--accent);
-  vertical-align: 0.62em;
-  animation: pulse 2.4s var(--ease-out) infinite;
-}
-
-.page__items {
-  margin: 0;
-  padding: 4px 0 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.page__items li { display: grid; gap: 4px; }
-
-.page__kind {
-  width: fit-content;
+.climb__sub {
+  margin: 16px 0 0;
   color: var(--ink-3);
   font-size: var(--fs-micro);
+  letter-spacing: 0.02em;
+}
+
+/* Ano gigante: odômetro vazado, atrás de tudo. */
+.climb__year {
+  position: absolute;
+  right: calc(var(--pad) * 0.6);
+  bottom: 40px;
+  display: flex;
+  font-family: var(--font-display);
+  font-size: clamp(9rem, min(30vw, 46svh), 34rem);
+  font-weight: 600;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--line-2);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* padding-right: o letter-spacing negativo encolhe a caixa do último dígito e o overflow cortava o "6"/"5". */
+.climb__yy { display: block; height: 0.8em; padding-right: 0.08em; overflow: hidden; }
+.climb__roll { display: flex; flex-direction: column; will-change: transform; }
+.climb__roll span { display: block; height: 0.8em; }
+
+.climb__plot { position: absolute; inset: 0; }
+.climb__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+.climb__grid { stroke: var(--line); stroke-dasharray: 2 6; }
+.climb__base { stroke: var(--line-2); }
+.climb__tick { stroke: var(--line-2); }
+.climb__hatch { stroke: var(--line); stroke-width: 1.4; }
+.climb__area { fill: url(#climb-hatch); }
+
+.climb__line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
+}
+
+.climb__dot {
+  fill: var(--ink);
+  opacity: 0;
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.3s var(--ease-out), transform 0.6s cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+.climb__dot.is-on { opacity: 1; transform: none; }
+.climb__dot.is-hover { fill: var(--accent); stroke: var(--ink); stroke-width: 2; transform: scale(1.7); transition-duration: 0.3s; }
+
+/* Dica do evento (hover no ponto): mesma linguagem das abas de célula. */
+.climb__tip {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  gap: 4px;
+  max-width: 280px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: var(--hair) solid var(--line-2);
+  box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.25);
+  font-size: var(--fs-micro);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(calc(-100% - 10px));
+  transition: opacity 0.2s var(--ease-out);
+}
+.climb__tip.is-on { opacity: 1; transform: translateY(calc(-100% - 16px)); transition: opacity 0.2s var(--ease-out), transform 0.4s var(--ease-out); }
+.climb__tip b { color: var(--ink-3); font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; }
+.climb__tip strong { font-family: var(--font-display); font-size: 1rem; font-weight: 520; letter-spacing: -0.01em; line-height: 1.15; color: var(--ink); }
+.climb__tip span { color: var(--ink-2); }
+
+.climb__head { fill: var(--accent); stroke: var(--ink); stroke-width: 2; }
+.climb__halo { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0; }
+.is-done .climb__halo { animation: climb-halo 2.4s var(--ease-out) infinite; transform-box: fill-box; transform-origin: center; }
+
+@keyframes climb-halo {
+  0% { opacity: 0.9; transform: scale(0.45); }
+  80%, 100% { opacity: 0; transform: scale(1.6); }
+}
+
+/* Rótulos dos cargos: aparecem quando a ponta chega ao degrau. */
+.climb__labels { position: absolute; inset: 0; pointer-events: none; }
+
+.climb__label {
+  position: absolute;
+  display: grid;
+  gap: 6px;
+  padding-bottom: 16px;
+  transform: translateY(-100%);
+}
+.climb__label--top { white-space: nowrap; }
+.climb__label.is-below { padding: 0; transform: none; }
+
+.climb__label strong,
+.climb__label span {
+  display: block;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s var(--ease-out), transform 0.7s var(--ease-out);
+}
+
+.climb__label strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, min(2.5vw, 4.2svh), 2.6rem);
+  font-weight: 520;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.climb__label--top strong { font-size: clamp(2.2rem, min(4.6vw, 7.6svh), 4.8rem); letter-spacing: -0.045em; }
+
+.climb__label span { color: var(--ink-3); font-size: var(--fs-micro); letter-spacing: 0.02em; transition-delay: 0.08s; }
+
+.climb__label.is-on strong,
+.climb__label.is-on span { opacity: 1; transform: none; }
+
+/* "hoje": abaixo da ponta da linha. */
+.climb__now {
+  position: absolute;
+  display: flex;
+  padding-top: 18px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  text-align: right;
+  font-size: var(--fs-micro);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.5s var(--ease-out), transform 0.7s var(--ease-out);
+}
+.climb__now.is-on { opacity: 1; transform: none; }
+.climb__now b {
+  padding: 2px 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.climb__now span { color: var(--ink-2); }
 
-.page__items strong {
-  font-family: var(--font-display);
-  font-size: clamp(1.1rem, 1.5vw, 1.45rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-}
-
-.page__where { color: var(--ink-2); font-size: 0.75rem; }
-
-.is-role strong { font-weight: 600; }
-.is-now .page__kind { padding: 1px 7px; background: var(--accent); color: var(--accent-ink); }
-
-.page__agg {
-  padding: 10px 16px;
-  border-top: var(--hair) solid var(--line);
-  overflow: hidden;
-  color: var(--ink-3);
-  font-size: var(--fs-micro);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.page__agg span { color: var(--ink-2); }
-
-.path__axis { display: none; }
-
-/* ── Desktop: tela fixa, páginas na horizontal ────────── */
-
-.has-hpath .path {
-  height: calc(100svh - var(--bar-h) - 40px);
-  display: flex;
-  flex-direction: column;
-  border-top: var(--hair) solid var(--line);
-}
-
-.has-hpath .path__track {
-  flex: 1;
-  min-height: 0;
-  width: max-content;
-  flex-direction: row;
-  gap: 20px;
-  padding: 24px var(--pad) 18px;
-  will-change: transform;
-}
-
-.has-hpath .page { flex: none; width: min(56vw, 780px); }
-
-.has-hpath .path__axis {
-  display: block;
-  padding: 0 var(--pad) 20px;
-}
-
-.path__line { display: block; height: 2px; background: var(--line); }
-.path__fill { display: block; height: 100%; background: var(--ink); transform: scaleX(0); transform-origin: left; }
-
-.path__axis ol {
-  display: flex;
-  justify-content: space-between;
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
+/* Eixo de anos. */
+.climb__yr {
+  position: absolute;
+  padding-left: 6px;
   color: var(--ink-3);
   font-size: var(--fs-micro);
   font-variant-numeric: tabular-nums;
+  transition: color 0.3s var(--ease-out);
 }
+.climb__yr.is-empty { opacity: 0.45; }
+.climb__yr.is-active { color: var(--ink); font-weight: 600; }
 
-.path__axis li { transition: color 0.3s var(--ease-out); }
-.path__axis li.is-active { color: var(--ink); font-weight: 600; }
+/* Linha de resultado: o STRING_AGG do ano em que a ponta está. */
+.climb__row {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0 14px;
+  padding: 12px var(--pad);
+  border-top: var(--hair) solid var(--line);
+  font-size: var(--fs-micro);
+  white-space: nowrap;
+}
+.climb__cell--k { color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.climb__cell--y { font-weight: 600; font-variant-numeric: tabular-nums; margin-right: 14px; }
+.climb__cell--v { overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.climb__cell--n { color: var(--ink-3); }
+
+/* ── Desktop: tela fixa ───────────────────────────────── */
+
+.has-hpath .climb { height: calc(100svh - var(--bar-h) - 40px); }
+.has-hpath .climb__stage { flex: 1; height: auto; min-height: 0; }
+
+/* ── Mobile ───────────────────────────────────────────── */
 
 @media (max-width: 760px) {
-  .page__body { grid-template-columns: 1fr; gap: 18px; padding: 22px 18px; }
-  .page__year { align-self: start; font-size: 4.5rem; }
+  .climb__head { position: relative; top: auto; left: auto; max-width: none; padding: calc(var(--pad) * 2) var(--pad) 0; }
+  .climb__stage { height: auto; min-height: 0; display: flex; flex-direction: column-reverse; }
+  .climb__plot { position: relative; inset: auto; height: 440px; }
+  .climb__year { bottom: 36px; font-size: 9rem; }
+  .climb__label { gap: 3px; padding-bottom: 10px; }
+  .climb__label strong { font-size: 1.05rem; }
+  .climb__label--top strong { font-size: 1.6rem; }
+  .climb__label span { display: none; }
+  .climb__row { grid-template-columns: auto auto minmax(0, 1fr); }
+  .climb__row .climb__cell--k:nth-of-type(3),
+  .climb__row .climb__cell--n { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .climb__label strong, .climb__label span, .climb__now { transition: none; }
+  .is-done .climb__halo { animation: none; }
 }

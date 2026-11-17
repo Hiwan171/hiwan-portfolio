@@ -8,6 +8,20 @@
     <meta name="theme-color" content="#ebe7de" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Hiwan desenvolve views SQL, automações em Python, dashboards Power BI e sistemas web que transformam dados espalhados em sistemas que funcionam." />
+    <!-- Compartilhamento (LinkedIn/OG). A URL do site vem de SITE_URL no build (vite.config.ts); sem ela, canonical/og:url saem. -->
+    <link rel="canonical" href="%SITE_URL%/" data-site-url />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:site_name" content="SELECT * FROM hiwan" />
+    <meta property="og:title" content="Hiwan — Transformo dados espalhados em sistemas que funcionam." />
+    <meta property="og:description" content="Desenvolvedor full stack em Belo Horizonte: views SQL, automações em Python, dashboards Power BI e sites. Um portfólio que é uma consulta SQL." />
+    <meta property="og:url" content="%SITE_URL%/" data-site-url />
+    <meta property="og:image" content="%SITE_URL%/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Hero do portfólio: query SQL, a frase 'Transformo dados espalhados em sistemas que funcionam.' e o retrato em partículas." />
+    <meta name="twitter:card" content="summary_large_image" />
     <script>
       // Tema/idioma antes do primeiro paint (evita flash). Query string vence storage.
       (function () {
@@ -116,6 +130,9 @@
     </nav>
 
     <main>
+      <!-- Espaçador da tela fixa já no HTML (ScrollTrigger `pinSpacer`): sem ele o GSAP reembrulhava o hero
+           depois da intro e o Chrome contava a headline como conteúdo novo (LCP = fim da intro). -->
+      <div class="hero-spacer">
       <section class="hero" aria-labelledby="hero-title">
         <div class="cell cell--editor">
           <div class="cell__tab"><span>query.sql</span><span class="cell__tab-meta" data-i18n="editor.meta"></span></div>
@@ -156,6 +173,7 @@
           </div>
         </div>
       </section>
+      </div>
 
       <!-- Seção 2: a próxima query. O resultado é a lista de casos. -->
       <section class="sec sec--projects" id="projetos" aria-labelledby="proj-title">
@@ -166,24 +184,36 @@
             <p class="sec__sub" data-i18n="proj.sub"></p>
           </div>
         </header>
-        <table class="rows" data-proj-rows></table>
+        <div class="proj" data-proj>
+          <ol class="proj__list" data-proj-list></ol>
+          <aside class="proj__pane" id="proj-pane" data-proj-pane>
+            <div class="cell__tab"><span data-pane-tab></span><span class="cell__tab-meta" data-pane-count></span></div>
+            <div class="proj__stage" data-pane-stage>
+              <div class="proj__fit" data-pane-fit></div>
+              <span class="proj__scan" aria-hidden="true" data-pane-scan></span>
+            </div>
+            <dl class="proj__explain" aria-hidden="true" data-pane-explain></dl>
+          </aside>
+        </div>
       </section>
 
       <!-- Seção 3: trajetória (GROUP BY ano). Desktop: tela fixa com páginas na horizontal. -->
       <section class="sec sec--path" id="trajetoria" aria-labelledby="path-title">
-        <header class="sec__head">
+        <div class="climb" data-climb>
           <div class="cell__tab"><span data-path-table></span><span class="cell__tab-meta" data-path-count></span></div>
-          <div class="sec__title-row">
-            <h2 class="sec__title sec__title--statement" id="path-title" data-path-title></h2>
-            <p class="sec__sub" data-path-sub></p>
+          <div class="climb__stage" data-path-stage>
+            <div class="climb__year" aria-hidden="true"><span>20</span><span class="climb__yy"><span class="climb__roll" data-path-roll></span></span></div>
+            <div class="climb__plot" data-path-plot aria-hidden="true">
+              <svg class="climb__svg" data-path-svg></svg>
+              <div class="climb__labels" data-path-labels></div>
+            </div>
+            <header class="climb__head">
+              <h2 class="climb__title" id="path-title" data-path-title></h2>
+              <p class="climb__sub" data-path-sub></p>
+            </header>
           </div>
-        </header>
-        <div class="path" data-path>
-          <div class="path__track" data-path-track></div>
-          <div class="path__axis" aria-hidden="true">
-            <span class="path__line"><span class="path__fill"></span></span>
-            <ol data-path-ticks></ol>
-          </div>
+          <div class="climb__row" aria-hidden="true" data-path-row></div>
+          <ol class="sr-only" data-path-list></ol>
         </div>
       </section>
     </main>

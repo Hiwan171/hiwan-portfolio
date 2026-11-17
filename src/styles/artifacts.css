@@ -49,15 +49,18 @@
 
 /* ── 3. View SQL ──────────────────────────────────────── */
 
+/* Janela de ~10 linhas que acompanha o cursor (como um editor): menos altura, fonte maior.
+   Com 16 linhas a 0,72rem o artefato escalava para ~10 px em 1440 (auditoria 12, D5). */
 .v__code {
   margin: 0;
-  height: 288px;
+  height: 228px;
   padding: 14px 16px;
   overflow: hidden;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  line-height: 1.55;
+  font-size: 0.8125rem;
+  line-height: 1.5;
   border-bottom: var(--hair) solid var(--line);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 22px);
 }
 .v__code .k, .v__run .k { color: var(--code-kw); font-weight: 600; }
 .v__code .i, .v__run .i { color: var(--code-id); }
@@ -192,5 +195,5 @@
   .bi__kpis b { font-size: 1.4rem; }
   .bi__bars li { grid-template-columns: 8em 1fr 2em; }
   .br__view { height: 320px; }
-  .v__code { font-size: 0.6rem; height: 240px; }
+  .v__code { font-size: 0.66rem; height: 200px; }
 }

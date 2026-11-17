@@ -41,10 +41,17 @@ export function initSections(opts: { bootDone: Promise<void> }) {
   });
 
   // Barra de query aparece quando o editor do hero sai por baixo da barra de conexão.
+  // Medido pelo espaçador (o hero fica grudado durante a ponte): o editor sai quando o fundo do
+  // espaçador está a (altura do hero − fundo do editor) abaixo da barra. Sem ponte, dá no mesmo.
   ScrollTrigger.create({
-    trigger: '.cell--editor',
-    pinnedContainer: '.hero', // o editor fica preso na ponte em tela fixa: só "sai" depois dela
-    start: 'bottom top+=52',
+    trigger: '.hero-spacer',
+    start: () => {
+      const hero = document.querySelector<HTMLElement>('.hero')!;
+      const ed = document.querySelector<HTMLElement>('.cell--editor')!;
+      const edBottom = ed.getBoundingClientRect().bottom - hero.getBoundingClientRect().top;
+      return `bottom top+=${52 + hero.offsetHeight - edBottom}`;
+    },
+    invalidateOnRefresh: true,
     onEnter: () => qbarEl().classList.add('is-on'),
     onLeaveBack: () => qbarEl().classList.remove('is-on'),
   });
@@ -72,14 +79,14 @@ export function initSections(opts: { bootDone: Promise<void> }) {
   });
 
   // Linhas do resultado chegam como um result set: em sequência, logo após a query "executar".
-  const rows = () => document.querySelectorAll('[data-proj-rows] tbody tr.row');
+  const rows = () => document.querySelectorAll('[data-proj-list] .prow');
   if (!reduced) {
     gsap.set(rows(), { opacity: 0, y: 14 });
     ScrollTrigger.create({
-      trigger: '[data-proj-rows]',
+      trigger: '[data-proj-list]',
       start: 'top 80%',
       once: true,
-      onEnter: () => gsap.to(rows(), { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out', stagger: 0.07, delay: 0.55 }),
+      onEnter: () => gsap.to(rows(), { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out', stagger: 0.07, delay: 0.2, clearProps: 'opacity,transform' }),
     });
     gsap.from('.sec--projects .sec__title', {
       yPercent: 40, opacity: 0, duration: 1.1, ease: 'expo.out',

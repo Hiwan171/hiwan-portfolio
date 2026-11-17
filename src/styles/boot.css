@@ -284,7 +284,7 @@ html[data-boot] .boot-scan {
 }
 
 @media (max-width: 760px) {
-  .boot__skip { display: none; }
+  .boot__bar .bar__state { display: none; } /* abre espaço para o "toque para pular" */
   .login__body { column-gap: 12px; }
   .login { margin-bottom: 18vw; } /* deixa o contador respirar */
   .login__body > span:empty { display: none; }

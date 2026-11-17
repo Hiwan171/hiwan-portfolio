@@ -6,6 +6,8 @@ import type { Tok } from './i18n';
 
 export type Kind = 'role' | 'study' | 'cert' | 'build' | 'now';
 export type PathYear = { year: number; items: { kind: Kind; title: string; where: string }[] };
+/** Degrau do gráfico: `x` é o ano decimal em que o nível começa (ago/2025 = 2025.6). */
+export type PathStep = { x: number; level: number; label: string; meta: string };
 
 const q = (cols: { year: string; ev: string; evs: string }, table: string): Tok[] => [
   ['k', 'SELECT'], ['t', ' '], ['i', cols.year], ['p', ', '], ['k', 'STRING_AGG'], ['p', '('], ['i', cols.ev], ['p', ', '],
@@ -25,6 +27,14 @@ export const pathData = {
     event: 'evento',
     events: 'eventos',
     rows: 'linhas',
+    steps: [
+      { x: 2019, level: 0, label: 'Estudante', meta: 'Ciência da Computação · UniBH' },
+      { x: 2020.15, level: 1, label: 'Aprendiz', meta: 'Inova BH / Saúde BH' },
+      { x: 2022, level: 2, label: 'Auxiliar de TI', meta: 'Colefar' },
+      { x: 2023, level: 3, label: 'Assistente de TI', meta: 'Colefar' },
+      { x: 2025.6, level: 4, label: 'Sênior', meta: 'redes e comunicação de dados · Colefar' },
+    ] as PathStep[],
+    now: { label: 'hoje', meta: '+ projetos para outras empresas' },
     years: [
       { year: 2019, items: [{ kind: 'study', title: 'Ciência da Computação', where: 'UniBH · 2019–2022' }] },
       { year: 2020, items: [
@@ -68,6 +78,14 @@ export const pathData = {
     event: 'event',
     events: 'events',
     rows: 'rows',
+    steps: [
+      { x: 2019, level: 0, label: 'Student', meta: 'Computer Science · UniBH' },
+      { x: 2020.15, level: 1, label: 'Apprentice', meta: 'Inova BH / Saúde BH' },
+      { x: 2022, level: 2, label: 'Junior IT Assistant', meta: 'Colefar' },
+      { x: 2023, level: 3, label: 'IT Assistant', meta: 'Colefar' },
+      { x: 2025.6, level: 4, label: 'Senior', meta: 'network & data communications · Colefar' },
+    ] as PathStep[],
+    now: { label: 'now', meta: '+ projects for other companies' },
     years: [
       { year: 2019, items: [{ kind: 'study', title: 'Computer Science', where: 'UniBH · 2019–2022' }] },
       { year: 2020, items: [

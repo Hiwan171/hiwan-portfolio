@@ -6,6 +6,7 @@ import './styles/hero.css';
 import './styles/boot.css';
 import './styles/sections.css';
 import './styles/case.css';
+import './styles/projects.css';
 import './styles/artifacts.css';
 import './styles/path.css';
 
@@ -137,14 +138,14 @@ function buildIntro(booted: boolean) {
     },
   });
 
-  // Orçamento: headline começa antes de 1,2 s; intro inteira ≤ 2,6 s.
+  // Orçamento: headline começa antes de 1 s; intro inteira ≤ 2,6 s (auditoria 12: −0,25 s no LCP).
   tl.to(bar, { opacity: 1, duration: 0.6 }, 0)
     // Retrato: partículas espalhadas se organizam no rosto ("dados espalhados → sistema").
     .to(blob, { opacity: 1, duration: 0.5, ease: 'power1.out' }, 0.1)
     .to(portraitState, { p: 1, duration: 2.6, ease: 'none' }, 0.1)
-    .to(typing, { n: total, duration: 0.85, ease: 'power1.in', onUpdate: () => renderQuery(q, Math.round(typing.n)) }, 0.2)
+    .to(typing, { n: total, duration: 0.65, ease: 'power1.in', onUpdate: () => renderQuery(q, Math.round(typing.n)) }, 0.15)
     // Posições explícitas: .call() sem posição vai para o FIM da timeline (depois do blob).
-    .addLabel('typed', 1.05)
+    .addLabel('typed', 0.8)
     .call(() => setStatus('status.running'), undefined, 'typed')
     .call(() => setStatus('status.done'), undefined, 'typed+=0.16')
     .to(lines, { yPercent: 0, duration: 1.1, stagger: 0.07 }, 'typed+=0.16')

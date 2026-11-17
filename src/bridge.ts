@@ -2,10 +2,13 @@
  * Ponte hero → projetos em tela fixa (1º dos 2 momentos "pinned"; o resto do site é scroll vertical).
  * Só desktop e sem reduced-motion. Scrub reversível: rolar para cima desfaz tudo.
  *
- *   0.00–0.32  headline sai por cima; retrato volta a ser dados espalhados; tabela e botões somem
- *   0.15–0.60  o editor apaga a query do hero e digita a de projetos
- *   0.60–0.66  ▸ executando… → ✓ 5 linhas
- *   0.66–0.95  "dbo.projetos" sobe no lugar da headline; aviso de passagem para as linhas
+ * Tempos da timeline (s de timeline; o scroll percorre 0 → 0,8). Auditoria 12 (D1): as fases se
+ * sobrepõem para nunca haver quadro vazio — a headline só sai quando o título novo já vem subindo.
+ *   0.00–0.36  o editor apaga a query do hero e digita a de projetos; retrato se espalha
+ *   0.20–0.44  botões, headline e tabela saem (a headline sai enquanto a query ainda é digitada)
+ *   0.36–0.40  ▸ executando… → ✓ 5 linhas
+ *   0.38–0.64  "dbo.projetos" sobe no lugar da headline; dados assentam na grade; aviso de passagem
+ *   fim        a lista de projetos sobe por cima da faixa do aviso (margem negativa, D2)
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -52,10 +55,11 @@ function build() {
     code.innerHTML = v < 0 ? tokensHtml(heroQ, -v) + caret : tokensHtml(projQ, v) + caret;
   };
 
-  // Estado discreto (status, contagem, cena da barra de query) derivado do progresso.
+  // Estado discreto (status, contagem, cena da barra de query) derivado do tempo da timeline.
+  const T = { type: 0.02, run: 0.36, done: 0.4, end: 0.8 };
   let phase = '';
   const sync = (p: number) => {
-    const next = p < 0.15 ? 'hero' : p < 0.6 ? 'typing' : p < 0.66 ? 'running' : 'done';
+    const next = p < T.type ? 'hero' : p < T.run ? 'typing' : p < T.done ? 'running' : 'done';
     if (next === phase) return;
     phase = next;
     const t = dict[currentLang()].text;
@@ -86,32 +90,50 @@ function build() {
 
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
+    // Tela fixa por CSS (`position: sticky` dentro de .hero-spacer), não por pin do GSAP: o pin tirava e
+    // devolvia o hero ao DOM a cada refresh e o Chrome contava a headline como conteúdo novo
+    // (LCP = fim da intro, 2,8 s; auditoria 12). O GSAP só lê o scroll.
     scrollTrigger: {
-      trigger: '.hero',
+      trigger: '.hero-spacer',
       start: 'top top+=52',
-      end: '+=110%',
-      pin: true,
+      end: () => `+=${bridgeLen()}`, // função: recalculada em todo refresh (sem invalidateOnRefresh, que
+      // regravaria os valores iniciais no meio da animação e quebraria a volta ao hero)
       scrub: 0.6,
-      anticipatePin: 1,
       // Recalcula ANTES dos gatilhos criados antes dela (barra de query, linhas): eles dependem
       // do espaço que esta tela fixa acrescenta.
       refreshPriority: 1,
-      onUpdate: (self) => sync(self.progress),
+      onUpdate: (self) => sync(self.progress * T.end),
     },
   });
   st = tl.scrollTrigger!;
 
-  tl.to('.headline .line > span', { yPercent: -130, duration: 0.24, stagger: 0.025, ease: 'power2.in' }, 0)
-    .to('.actions', { opacity: 0, y: -10, duration: 0.14 }, 0)
-    .to('[data-result]', { opacity: 0, duration: 0.18 }, 0.04)
-    .to(portraitState, { p: 0.1, duration: 0.45, ease: 'power1.in' }, 0)
+  tl.to(k, { v: lenP, duration: T.run - T.type, onUpdate: renderK }, T.type)
+    .to(portraitState, { p: 0.1, duration: 0.34, ease: 'power1.in' }, 0)
+    .to('.actions', { opacity: 0, y: -10, duration: 0.12 }, 0.2)
+    // De baixo para cima: "funcionam." libera primeiro o lugar onde o título novo entra (sem colisão).
+    .to('.headline .line > span', { yPercent: -130, duration: 0.18, stagger: { each: 0.03, from: 'end' }, ease: 'power2.in' }, 0.22)
+    // Título novo sobe enquanto as linhas de cima ainda saem: troca, não vazio.
+    .to('.bridge-title .line > span', { yPercent: 0, duration: 0.22, ease: 'power3.out' }, 0.39)
+    // A tabela do hero só sai quando o aviso de 5 linhas entra (a faixa nunca fica vazia).
+    .to('[data-result]', { opacity: 0, duration: 0.08 }, 0.34)
+    .fromTo('.bridge-handoff', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.1, immediateRender: false }, T.done)
     // Depois que a query executa, os dados assentam na grade de resultado (5 linhas).
-    .to(portraitState, { g: 1, duration: 0.3, ease: 'power1.inOut' }, 0.62)
-    .to(k, { v: lenP, duration: 0.45, onUpdate: renderK }, 0.15)
-    .to('.bridge-title .line > span', { yPercent: 0, duration: 0.2, ease: 'power3.out' }, 0.66)
-    .fromTo('.bridge-title__sub', { opacity: 0 }, { opacity: 1, duration: 0.12, immediateRender: false }, 0.78)
-    .fromTo('.bridge-handoff', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.15, immediateRender: false }, 0.72)
-    .to({}, { duration: 0.05 }); // respiro no fim antes de soltar a tela
+    .to(portraitState, { g: 1, duration: 0.24, ease: 'power1.inOut' }, T.done)
+    .fromTo('.bridge-title__sub', { opacity: 0 }, { opacity: 1, duration: 0.12, immediateRender: false }, 0.5)
+    .to({}, { duration: T.end - 0.64 }, 0.64); // respiro: a lista sobe por cima do aviso antes de soltar
+}
+
+/** Distância de rolagem da tela fixa (= o antigo end '+=110%'). */
+const bridgeLen = () => Math.round(innerHeight * 1.1);
+
+/** Antes de cada refresh: comprimento da tela fixa (padding do espaçador) e altura da faixa do aviso
+ *  (célula de resultado sem a aba), por cima da qual a lista de projetos sobe. */
+function setBand() {
+  root.style.setProperty('--bridge-len', `${bridgeLen()}px`);
+  const cell = document.querySelector<HTMLElement>('.cell--result');
+  const tab = cell?.querySelector<HTMLElement>('.cell__tab');
+  if (!cell || !tab) return;
+  root.style.setProperty('--handoff-h', `${cell.offsetHeight - tab.offsetHeight}px`);
 }
 
 /** Liga a ponte depois que a intro do hero termina (os tweens partem do estado final da intro). */
@@ -120,12 +142,17 @@ export function initBridge() {
   mm = gsap.matchMedia();
   mm.add('(min-width: 761px) and (prefers-reduced-motion: no-preference)', () => {
     root.classList.add('has-bridge');
+    setBand();
+    ScrollTrigger.addEventListener('refreshInit', setBand);
     build();
     // Gatilhos criados antes do pin (barra de query, linhas de projetos) precisam recalcular
     // posições com o espaço que a tela fixa acrescenta.
     ScrollTrigger.refresh();
     return () => {
       root.classList.remove('has-bridge');
+      ScrollTrigger.removeEventListener('refreshInit', setBand);
+      root.style.removeProperty('--handoff-h');
+      root.style.removeProperty('--bridge-len');
       st = null;
     };
   });

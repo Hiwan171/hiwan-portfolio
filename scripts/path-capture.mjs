@@ -18,11 +18,12 @@ const errors = [];
 const info = (p) => p.evaluate(() => ({
   y: Math.round(scrollY),
   hpath: document.documentElement.classList.contains('has-hpath'),
-  active: document.querySelector('[data-path-ticks] li.is-active')?.textContent,
+  active: document.querySelector('[data-yr].is-active')?.textContent,
+  labels: [...document.querySelectorAll('[data-step].is-on')].length,
+  row: document.querySelector('[data-path-row]')?.textContent.replace(/\s+/g, ' ').trim().slice(0, 60),
   qbar: document.querySelector('[data-qbar-code]').textContent.slice(0, 40),
   status: document.querySelector('[data-qbar-status]').textContent,
-  pathTop: Math.round(document.querySelector('[data-path]').getBoundingClientRect().top),
-  skew: getComputedStyle(document.querySelector('[data-path-track]')).transform.slice(0, 40),
+  pathTop: Math.round(document.querySelector('[data-climb]').getBoundingClientRect().top),
 }));
 
 try {
@@ -52,7 +53,7 @@ try {
   const jumps = [];
   for (let k = 0; k < 12; k++) {
     await p.mouse.wheel(0, 300);
-    jumps.push(await p.evaluate(() => [Math.round(document.querySelector('.bar').getBoundingClientRect().top), Math.round(document.querySelector('[data-path]').getBoundingClientRect().top)]));
+    jumps.push(await p.evaluate(() => [Math.round(document.querySelector('.bar').getBoundingClientRect().top), Math.round(document.querySelector('[data-climb]').getBoundingClientRect().top)]));
     await p.waitForTimeout(30);
   }
   console.log('rápido', JSON.stringify(await info(p)), 'barra/path top durante:', JSON.stringify(jumps));
@@ -64,6 +65,16 @@ try {
   const axe = await new AxeBuilder({ page: p }).include('#trajetoria').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   console.log('axe', JSON.stringify(axe.violations.map((v) => `${v.id}:${v.nodes.length}:${v.nodes[0].target.join(' ')}`)));
   await ctx.close();
+
+  // 1280×720 escuro, fim do gráfico (título × rótulo do topo).
+  const s2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  s2.on('pageerror', (e) => errors.push(String(e)));
+  await s2.goto(`${base}?static&theme=dark&lang=pt`);
+  await s2.waitForFunction(() => window.__introDone === true);
+  await s2.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  await s2.waitForTimeout(1800);
+  await s2.screenshot({ path: `${out}/d-5-1280-dark-end.png` });
+  await s2.close();
 
   const m = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   m.on('pageerror', (e) => errors.push(String(e)));

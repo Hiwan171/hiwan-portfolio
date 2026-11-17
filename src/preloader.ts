@@ -11,18 +11,19 @@ type Opts = {
   seekAt?: number;
 };
 
-/* Roteiro (s). Orçamento: tela sai em ~3,5 s; headline do hero em ~3,7 s.
-   Auditoria 16/11: pausa do Pesquisador encurtada (−0,22 s; mais que isso a árvore não completa). */
+/* Roteiro (s). Orçamento: tela sai em ~2,9 s; headline do hero em ~3,1 s.
+   Auditoria 16/11: pausa do Pesquisador encurtada (−0,22 s; mais que isso a árvore não completa).
+   Auditoria 12: tudo ~0,5 s mais curto (5,4 s até o hero completo era longo para quem vem do LinkedIn). */
 const T = {
-  login: 0.2, // digita o login
-  pass: 0.56, // digita a senha
-  press: 0.95, // clica em Conectar
-  ready: 1.45, // segura aqui até os assets estarem prontos
-  ok: 1.6, // conectado
-  explorer: 1.68, // o diálogo vira o Pesquisador de Objetos (prévia da navegação)
-  exit: 2.2, // a barra de progresso escapa e vira linha de varredura (árvore completa em ~2,15)
-  sweep: 2.5, // a linha sobe revelando o hero
-  dock: 3.25, // a linha encaixa na borda da barra
+  login: 0.16, // digita o login
+  pass: 0.46, // digita a senha
+  press: 0.8, // clica em Conectar
+  ready: 1.18, // segura aqui até os assets estarem prontos
+  ok: 1.3, // conectado
+  explorer: 1.36, // o diálogo vira o Pesquisador de Objetos (prévia da navegação)
+  exit: 1.86, // a barra de progresso escapa e vira linha de varredura (árvore completa em ~1,82)
+  sweep: 2.12, // a linha sobe revelando o hero
+  dock: 2.8, // a linha encaixa na borda da barra
 };
 const HERO_AT = T.sweep;
 
@@ -81,6 +82,8 @@ export function runPreloader({ onHero, seekAt }: Opts) {
   const treeItems = Array.from(tree.children);
 
   $('[data-boot-sr]').textContent = t['boot.sr'];
+  // Toque no celular, clique no desktop: qualquer ponto da tela (ou tecla) pula.
+  skipHint.textContent = matchMedia('(pointer: coarse)').matches ? t['boot.skipTouch'] : t['boot.skip'];
   state.textContent = t['boot.off'];
   status.textContent = t['boot.wait'];
 
@@ -145,12 +148,12 @@ export function runPreloader({ onHero, seekAt }: Opts) {
     .to([log, countWrap], { opacity: 1, duration: 0.5 }, 0.05)
     .to(pct, { v: 34, duration: T.press - 0.15, ease: 'power1.out', onUpdate: renderCount }, 0.15)
     .to(typed, {
-      login: loginText.length, duration: 0.35, ease: 'none',
+      login: loginText.length, duration: 0.3, ease: 'none',
       onStart: () => renderField(fLogin, '', true),
       onUpdate: () => renderField(fLogin, loginText.slice(0, Math.round(typed.login)), true),
     }, T.login)
     .to(typed, {
-      pass: PASS, duration: 0.32, ease: 'none',
+      pass: PASS, duration: 0.28, ease: 'none',
       onStart: () => renderField(fLogin, loginText, false),
       onUpdate: () => renderField(fPass, '•'.repeat(Math.round(typed.pass)), true),
     }, T.pass)

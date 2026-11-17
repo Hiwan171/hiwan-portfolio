@@ -1,12 +1,16 @@
 /**
- * Seção 2: linhas de projeto que se expandem em um caso completo ("EXPLAIN" da linha).
- * - Uma linha aberta por vez; a barra de query vira `SELECT * FROM dbo.projetos WHERE id = n;`.
- * - Cada caso monta um artefato (terminal, fila, view, BI, navegador) que roda ao abrir.
+ * Seção 2: o result set de projetos como o SSMS — lista de linhas à esquerda, painel de resultado à direita.
+ *
+ * Desktop (≥1101px): a lista rola normalmente; o painel fica preso ao lado (sticky, não é tela fixa).
+ *   A linha que cruza o meio da tela fica ativa: a barra de query vira `... WHERE id = n;`, o painel troca
+ *   de artefato com uma linha de varredura (o mesmo gesto da tela de conexão) e o artefato roda ao vivo.
+ * Estreito: cada linha traz o próprio artefato (montado ao entrar na tela) e o caso num <details>.
  */
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type Lenis from 'lenis';
 import { dict, currentLang, type Artifact } from './i18n';
-import { goScene, scenes } from './qbar';
+import { goScene, scenes, currentScene } from './qbar';
 import { mountTerminal } from './artifacts/terminal';
 import { mountQueue } from './artifacts/queue';
 import { mountView } from './artifacts/view';
@@ -18,6 +22,9 @@ type Mount = (host: HTMLElement) => Mounted;
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const WIDE = '(min-width: 1101px)';
 
 const ARTIFACTS: Record<Artifact, Mount> = {
   terminal: mountTerminal,
@@ -27,144 +34,255 @@ const ARTIFACTS: Record<Artifact, Mount> = {
   browser: mountBrowser,
 };
 
+let getLenis: () => Lenis | null = () => null;
+let triggers: ScrollTrigger[] = [];
+let active = -1;
+let paneArt: Mounted | null = null;
+let swapTl: gsap.core.Timeline | null = null;
+let fitObs: ResizeObserver | null = null;
+let growObs: ResizeObserver | null = null;
+const inline = new Map<number, Mounted>();
+let started = false;
+
+const rowsEls = () => [...document.querySelectorAll<HTMLElement>('[data-proj-list] .prow')];
+
 export function renderProjects() {
   const p = dict[currentLang()].projects;
   const t = dict[currentLang()].text;
   const table = p.query.find(([k, v]) => k === 'i' && v.startsWith('dbo.'))![1];
-  document.querySelector('[data-proj-table]')!.textContent = table;
-  document.querySelector('[data-proj-name]')!.textContent = table.replace('dbo.', '');
-  document.querySelector('[data-proj-count]')!.textContent = `${p.rows.length} ${t['proj.rows']}`;
+  $('[data-proj-table]').textContent = table;
+  $('[data-proj-name]').textContent = table.replace('dbo.', '');
+  $('[data-proj-count]').textContent = `${p.rows.length} ${t['proj.rows']}`;
+  $('[data-proj-pane]').setAttribute('aria-label', t['proj.pane']);
 
-  document.querySelector('[data-proj-rows]')!.innerHTML =
-    `<thead><tr>${p.cols.map((c) => `<th scope="col">${c}</th>`).join('')}</tr></thead>` +
-    `<tbody>${p.rows
-      .map((r, i) => {
-        const id = i + 1;
-        return `<tr class="row" data-i="${i}">
-          <td class="n">${String(id).padStart(2, '0')}</td>
-          <td class="name"><button class="row__btn" type="button" id="row-${id}" aria-expanded="false" aria-controls="case-${id}">${esc(r.name)}</button></td>
-          <td class="area"><span>${esc(r.area)}</span></td>
-          <td class="stack">${esc(r.stack)}</td>
-          <td class="result"><span>${esc(r.result)}</span><span class="row__go" aria-hidden="true">+</span></td>
-        </tr>
-        <tr class="detail" hidden><td colspan="5">
-          <div class="case" id="case-${id}" role="region" aria-labelledby="row-${id}" hidden>
-            <div class="case__grid">
-              <div class="case__text">
-                <dl class="case__dl">
-                  <div class="case__item"><dt>${t['case.problem']}</dt><dd>${esc(r.problem)}</dd></div>
-                  <div class="case__item"><dt>${t['case.solution']}</dt><dd>${esc(r.solution)}</dd></div>
-                  <div class="case__item case__item--out"><dt>${t['case.outcome']}</dt><dd>${esc(r.outcome)}</dd></div>
-                </dl>
-                <div class="case__actions">
-                  <button class="sbtn" type="button" data-case-close>${t['case.close']} ✕</button>
-                  ${i < p.rows.length - 1 ? `<button class="sbtn sbtn--ghost" type="button" data-case-next>${t['case.next']} →</button>` : ''}
-                </div>
-              </div>
-              <div class="case__art" data-art="${r.artifact}"></div>
-            </div>
-          </div>
-        </td></tr>`;
-      })
-      .join('')}</tbody>`;
+  $('[data-proj-list]').innerHTML = p.rows
+    .map((r, i) => {
+      const id = i + 1;
+      return `<li class="prow" data-i="${i}">
+        <button class="prow__btn" type="button" id="row-${id}" aria-controls="proj-pane" aria-pressed="false">
+          <span class="prow__top"><span class="prow__n">${pad2(id)}</span><span class="prow__area">${esc(r.area)}</span><span class="prow__stack">${esc(r.stack)}</span></span>
+          <span class="prow__name">${esc(r.name)}</span>
+          <span class="prow__kpi"><b>${esc(r.kpi[0])}</b><span>${esc(r.kpi[1])}</span></span>
+        </button>
+        <div class="prow__inline" data-inline="${r.artifact}"></div>
+        <details class="prow__case">
+          <summary>${t['proj.read']}</summary>
+          <dl>
+            <div><dt>${t['case.problem']}</dt><dd>${esc(r.problem)}</dd></div>
+            <div><dt>${t['case.solution']}</dt><dd>${esc(r.solution)}</dd></div>
+            <div><dt>${t['case.outcome']}</dt><dd>${esc(r.outcome)}</dd></div>
+          </dl>
+        </details>
+      </li>`;
+    })
+    .join('');
+
+  if (started) {
+    const was = active;
+    active = -1;
+    bind();
+    if (matchMedia(WIDE).matches) setActive(Math.max(0, was), false);
+  }
 }
 
-let open = -1;
-let art: Mounted | null = null;
-
-/** Troca de idioma re-renderiza a tabela: fecha o caso aberto sem animação. */
+/** Troca de idioma: desmonta artefatos (o render seguinte remonta). */
 export function resetCases() {
-  art?.destroy();
-  art = null;
-  if (open >= 0) goScene(scenes.projects);
-  open = -1;
+  paneArt?.destroy();
+  paneArt = null;
+  inline.forEach((m) => m.destroy());
+  inline.clear();
+  if (currentScene().id.startsWith('case:')) goScene(scenes.projects);
 }
 
-export function initCases(getLenis: () => Lenis | null) {
-  const tbody = () => document.querySelector('[data-proj-rows] tbody')!;
+// ── Painel (desktop) ─────────────────────────────────────
 
-  const parts = (i: number) => {
-    const row = tbody().querySelector<HTMLElement>(`tr.row[data-i="${i}"]`)!;
-    const btn = row.querySelector<HTMLButtonElement>('.row__btn')!;
-    const panel = document.getElementById(btn.getAttribute('aria-controls')!)!;
-    const detail = panel.closest('tr')!; // fechada, a linha inteira sai da árvore de acessibilidade
-    return { row, btn, panel, detail };
+/** Encaixa a janela do artefato no palco (escala para baixo se não couber; nunca amplia). */
+function fit() {
+  const stage = $<HTMLElement>('[data-pane-stage]');
+  const box = $<HTMLElement>('[data-pane-fit]');
+  const cs = getComputedStyle(stage);
+  const availW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const availH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  box.style.width = `${availW}px`;
+  box.style.transform = '';
+  let s = Math.min(1, availH / box.offsetHeight);
+  if (s < 1) {
+    box.style.width = `${availW / s}px`;
+    s = Math.min(1, availH / box.offsetHeight);
+  }
+  box.style.transform = `scale(${s})`;
+  box.style.marginLeft = `${(availW - box.offsetWidth * s) / 2}px`;
+}
+
+function setActive(i: number, animate = true) {
+  if (i === active) return;
+  const p = dict[currentLang()].projects;
+  const t = dict[currentLang()].text;
+  const r = p.rows[i];
+  active = i;
+
+  rowsEls().forEach((el, j) => {
+    el.classList.toggle('is-active', j === i);
+    el.querySelector('.prow__btn')!.setAttribute('aria-pressed', String(j === i));
+  });
+  $('[data-pane-tab]').textContent = `explain · id = ${i + 1}`;
+  $('[data-pane-count]').textContent = `${pad2(i + 1)} / ${pad2(p.rows.length)}`;
+  const explain = $<HTMLElement>('[data-pane-explain]');
+  const box = $<HTMLElement>('[data-pane-fit]');
+  const scan = $<HTMLElement>('[data-pane-scan]');
+
+  const mount = () => {
+    paneArt?.destroy();
+    fitObs?.disconnect();
+    paneArt = ARTIFACTS[r.artifact](box);
+    explain.innerHTML = `
+      <div><dt>${t['case.problem']}</dt><dd>${esc(r.problem)}</dd></div>
+      <div><dt>${t['case.solution']}</dt><dd>${esc(r.solution)}</dd></div>
+      <div class="is-out"><dt>${t['case.outcome']}</dt><dd>${esc(r.outcome)}</dd></div>`;
+    fit();
+    // O artefato cresce enquanto roda (ex.: a view mostra o resultado depois da query): reencaixa.
+    fitObs = new ResizeObserver(() => fit());
+    fitObs.observe(box.firstElementChild ?? box);
   };
 
-  const close = (i: number, instant = false) => {
-    const { row, btn, panel, detail } = parts(i);
-    btn.setAttribute('aria-expanded', 'false');
-    row.classList.remove('is-open');
-    art?.destroy();
-    art = null;
-    gsap.killTweensOf(panel);
-    const hide = () => {
-      panel.hidden = true;
-      detail.hidden = true;
-      gsap.set(panel, { clearProps: 'height' });
-    };
-    if (instant || reduced) return hide();
-    gsap.to(panel, { height: 0, duration: 0.55, ease: 'expo.inOut', onComplete: hide });
-  };
+  swapTl?.kill();
+  if (!animate || reduced) {
+    mount();
+    gsap.set([box, explain], { clipPath: 'none', opacity: 1 });
+    paneArt!.play();
+    return;
+  }
+  // Varredura: a janela atual apaga, a linha lima desce e revela a nova; o artefato roda ao terminar.
+  swapTl = gsap
+    .timeline()
+    .to([box, explain], { opacity: 0, duration: 0.18, ease: 'power1.in' })
+    .call(mount)
+    .set(box, { opacity: 1, clipPath: 'inset(0 0 100% 0)' })
+    .set(scan, { top: '0%', opacity: 1 })
+    .to(scan, { top: '100%', duration: 0.62, ease: 'power2.inOut' }, '>')
+    .to(box, { clipPath: 'inset(0 0 0% 0)', duration: 0.62, ease: 'power2.inOut' }, '<')
+    .to(scan, { opacity: 0, duration: 0.2 }, '>-0.05')
+    .fromTo(explain, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, '<')
+    .call(() => {
+      gsap.set(box, { clipPath: 'none' });
+      paneArt?.play();
+    });
+}
 
-  const openCase = (i: number) => {
-    if (open === i) {
-      close(i);
-      open = -1;
-      goScene(scenes.projects);
-      return;
-    }
-    if (open >= 0) close(open, true); // troca de caso: o anterior fecha seco para não brigar com o scroll
-    open = i;
-    const { row, btn, panel, detail } = parts(i);
-    btn.setAttribute('aria-expanded', 'true');
-    row.classList.add('is-open');
-    detail.hidden = false;
-    panel.hidden = false;
+// ── Gatilhos ─────────────────────────────────────────────
+
+function bind() {
+  triggers.forEach((t) => t.kill());
+  triggers = [];
+  growObs?.disconnect();
+  growObs = null;
+  const wide = matchMedia(WIDE).matches;
+  const rows = rowsEls();
+
+  if (wide) {
+    rows.forEach((row, i) => {
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: row,
+          start: 'top 55%',
+          end: 'bottom 55%',
+          onToggle: (st) => {
+            if (!st.isActive) return;
+            setActive(i);
+            if (!currentScene().id.startsWith('path')) goScene(scenes.case(i + 1));
+          },
+        }),
+      );
+    });
+    // Acima da primeira linha a barra volta para a lista inteira.
+    triggers.push(
+      ScrollTrigger.create({
+        trigger: rows[0],
+        start: 'top 55%',
+        onLeaveBack: () => currentScene().id.startsWith('case:') && goScene(scenes.projects),
+      }),
+    );
+    if (active < 0) setActive(0, false);
+  } else {
+    // Estreito: cada artefato monta quando a linha entra na tela e desmonta quando sai (economia de CPU).
+    // A altura de cada janela fica SEMPRE reservada (medida antes, só cresce): sem isso a página
+    // encolhia/crescia ~1300 px durante a rolagem e o scroll pulava para trás (auditoria 12, B1).
+    let refreshT = 0;
+    // Escrita no quadro seguinte: mudar o tamanho dentro do callback gera "ResizeObserver loop".
+    growObs = new ResizeObserver((entries) => {
+      const els = entries.map((e) => e.target as HTMLElement);
+      requestAnimationFrame(() => {
+        let grew = false;
+        for (const el of els) {
+          if (el.offsetHeight > (parseFloat(el.style.minHeight) || 0) + 1) {
+            el.style.minHeight = `${el.offsetHeight}px`;
+            grew = true;
+          }
+        }
+        // Os gatilhos abaixo dependem dessas alturas.
+        if (grew) {
+          clearTimeout(refreshT);
+          refreshT = window.setTimeout(() => ScrollTrigger.refresh(), 150);
+        }
+      });
+    });
+    rows.forEach((row, i) => {
+      const host = row.querySelector<HTMLElement>('[data-inline]')!;
+      if (!inline.has(i)) {
+        const probe = ARTIFACTS[host.dataset.inline as Artifact](host); // mede o estado inicial
+        host.style.minHeight = `${host.offsetHeight}px`;
+        probe.destroy();
+        host.innerHTML = '';
+      }
+      growObs!.observe(host);
+      const on = () => {
+        if (inline.has(i)) return;
+        const m = ARTIFACTS[host.dataset.inline as Artifact](host);
+        inline.set(i, m);
+        m.play();
+      };
+      const off = () => {
+        if (!inline.has(i)) return;
+        inline.get(i)!.destroy();
+        inline.delete(i);
+        host.innerHTML = '';
+      };
+      triggers.push(ScrollTrigger.create({ trigger: host, start: 'top 85%', end: 'bottom 10%', onToggle: (st) => (st.isActive ? on() : off()) }));
+    });
+  }
+}
+
+export function initCases(lenis: () => Lenis | null) {
+  getLenis = lenis;
+  started = true;
+
+  // Clique na linha (desktop): leva a linha ao meio da tela; o gatilho de scroll ativa.
+  $('[data-proj-list]').addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest('.prow__btn');
+    if (!btn || !matchMedia(WIDE).matches) return;
+    const row = btn.closest<HTMLElement>('.prow')!;
+    const i = Number(row.dataset.i);
+    setActive(i);
     goScene(scenes.case(i + 1));
-
-    const host = panel.querySelector<HTMLElement>('.case__art')!;
-    art = ARTIFACTS[host.dataset.art as Artifact](host);
-
-    // Rolagem até a linha: o Lenis precisa conhecer a altura FINAL da página antes de rolar
-    // (com o painel em altura 0 o alvo era cortado pelo limite de rolagem).
-    const lenis = getLenis();
-    gsap.set(panel, { height: 'auto' });
-    if (lenis) {
-      lenis.resize();
-      lenis.scrollTo(row, { duration: 1 });
-    } else row.scrollIntoView({ block: 'start' });
-
-    if (reduced) return art.play();
-    const items = panel.querySelectorAll('.case__item, .case__actions');
-    gsap.fromTo(panel, { height: 0 }, { height: 'auto', duration: 0.9, ease: 'expo.out', onComplete: () => gsap.set(panel, { clearProps: 'height' }) });
-    gsap.fromTo(items, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out', stagger: 0.08, delay: 0.15 });
-    gsap.fromTo(host, { opacity: 0 }, { opacity: 1, duration: 0.6, delay: 0.25, onComplete: () => art?.play() });
-  };
-
-  // Clique na linha inteira (exceto dentro do painel aberto) abre/fecha o caso.
-  tbody().addEventListener('click', (e) => {
-    const target = e.target as Element;
-    if (target.closest('[data-case-close]')) {
-      openCase(open);
-      parts(Number(target.closest('tr.detail')!.previousElementSibling!.getAttribute('data-i'))).btn.focus();
-      return;
-    }
-    if (target.closest('[data-case-next]')) {
-      const next = open + 1;
-      openCase(next);
-      parts(next).btn.focus();
-      return;
-    }
-    const row = target.closest('tr.row');
-    if (row) openCase(Number(row.getAttribute('data-i')));
+    const offset = -(innerHeight * 0.55 - row.offsetHeight / 2);
+    const l = getLenis();
+    if (l) l.scrollTo(row, { offset, duration: 1.1 });
+    else scrollTo({ top: row.getBoundingClientRect().top + scrollY + offset });
   });
 
-  // Esc fecha o caso aberto e devolve o foco à linha.
-  addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || open < 0) return;
-    const i = open;
-    openCase(i);
-    parts(i).btn.focus();
+  const mm = gsap.matchMedia();
+  mm.add({ wide: WIDE, narrow: '(max-width: 1100px)' }, () => {
+    active = -1;
+    bind();
+    return () => {
+      triggers.forEach((t) => t.kill());
+      triggers = [];
+      growObs?.disconnect();
+      growObs = null;
+      rowsEls().forEach((r) => r.querySelector<HTMLElement>('[data-inline]')?.style.removeProperty('min-height'));
+      resetCases();
+      active = -1;
+    };
   });
+  addEventListener('resize', () => matchMedia(WIDE).matches && paneArt && fit());
 }

@@ -113,14 +113,21 @@ export function mountView(host: HTMLElement): Mounted {
   let tl: gsap.core.Timeline | null = null;
   const reset = () => {
     $('code').innerHTML = '';
+    host.querySelector<HTMLElement>('.v__code')!.scrollTop = 0;
     $('select').innerHTML = '';
     $('st').textContent = '';
     $('grid').innerHTML = '';
     $('file').textContent = '';
     $('btn').classList.remove('is-pressed');
   };
+  // O editor rola junto com o cursor: a última linha digitada fica sempre visível.
+  const follow = () => {
+    const pre = host.querySelector<HTMLElement>('.v__code')!;
+    pre.scrollTop = pre.scrollHeight - pre.clientHeight;
+  };
   const final = () => {
     $('code').innerHTML = tokensHtml(sql);
+    requestAnimationFrame(follow);
     $('select').innerHTML = tokensHtml(select);
     $('st').textContent = `✓ ${s0.ok}`;
     $('grid').innerHTML = grid();
@@ -133,8 +140,8 @@ export function mountView(host: HTMLElement): Mounted {
     if (reducedMotion()) return final();
     const t = { n: 0, m: 0 };
     tl = gsap.timeline();
-    tl.to(t, { n: total, duration: 3.4, ease: 'none', onUpdate: () => ($('code').innerHTML = tokensHtml(sql, Math.round(t.n)) + caret) })
-      .call(() => ($('code').innerHTML = tokensHtml(sql)))
+    tl.to(t, { n: total, duration: 3.4, ease: 'none', onUpdate: () => { $('code').innerHTML = tokensHtml(sql, Math.round(t.n)) + caret; follow(); } })
+      .call(() => { $('code').innerHTML = tokensHtml(sql); follow(); })
       .to(t, { m: 30, duration: 0.5, ease: 'none', onUpdate: () => ($('select').innerHTML = tokensHtml(select, Math.round(t.m)) + caret) }, '+=0.25')
       .call(() => { $('select').innerHTML = tokensHtml(select); $('st').textContent = s0.exec; })
       .call(() => {
