@@ -1,0 +1,185 @@
+/* ── Seção 4: contato ─────────────────────────────────── */
+
+.sec--contact { border-top: var(--hair) solid var(--line); }
+
+.contact__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 32px;
+  padding: calc(var(--pad) * 1.6) var(--pad) calc(var(--pad) * 1.4);
+  border-bottom: var(--hair) solid var(--line);
+}
+
+/* Seção + rodapé cabem numa tela só (o final — COMMIT, "sessão encerrada", barra de status — tem de ser visto). */
+.contact__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, min(8.4vw, 12.5svh), 9.5rem);
+  font-weight: 520;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.contact__sub {
+  max-width: 38ch;
+  margin: 0;
+  justify-self: end;
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+/* Canais = linhas de resultado */
+.contact__rows { margin: 0; padding: 0; list-style: none; }
+
+.crow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: var(--hair) solid var(--line);
+  transition: background-color 0.3s var(--ease-out);
+}
+
+.crow__link {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 9em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  min-height: clamp(76px, 10.5svh, 104px);
+  padding: 0 var(--pad);
+  box-shadow: inset 0 0 0 0 var(--sel-line);
+  transition: box-shadow 0.3s var(--ease-out);
+}
+
+.crow__k {
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.crow__v {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, min(4.2vw, 6.6svh), 4rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* folga para descendentes ("g" de gmail): overflow:hidden + line-height 1 cortava a perna */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.crow__go {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: var(--hair) solid var(--line-2);
+  border-radius: 50%;
+  font-size: 1.1rem;
+  transition: transform 0.5s var(--ease-out), background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* "copiar" entre o e-mail e a seta (é irmão do link, então vai posicionado sobre o espaço livre). */
+.crow__copy {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--pad) + 44px + 16px);
+  transform: translateY(-50%);
+}
+.crow__copy.is-done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+@media (hover: hover) {
+  .crow:hover { background: var(--hover); }
+  .crow:hover .crow__k { color: var(--ink-2); } /* ink-3 sobre o hover cai abaixo de 4,5:1 (axe) */
+  .crow__link:hover { box-shadow: inset 3px 0 0 0 var(--sel-line); }
+  .crow__link:hover .crow__go { transform: rotate(45deg); background: var(--ink); border-color: var(--ink); color: var(--bg); }
+}
+
+/* COMMIT */
+.contact__commit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 20px;
+  min-height: 56px;
+  padding: calc(var(--pad) * 1.2) var(--pad);
+}
+
+.contact__btn { height: 52px; padding: 0 26px; font-size: 0.875rem; letter-spacing: 0.06em; }
+.contact__btn:disabled { opacity: 0.5; cursor: default; }
+.contact__hint { color: var(--ink-3); font-size: var(--fs-micro); letter-spacing: 0.02em; }
+
+/* A mensagem final entra ao lado do botão, no lugar da dica (fica na mesma tela). */
+.contact__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+}
+.contact__end[hidden] { display: none; }
+.contact__commit:has(.contact__end:not([hidden])) .contact__hint { display: none; }
+.contact__end strong { font-family: var(--font-display); font-size: 1.6rem; font-weight: 520; letter-spacing: -0.02em; }
+.contact__end span { color: var(--ink-2); }
+
+/* Linha de varredura do final (mesma da tela de conexão) */
+.end-scan {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 101;
+  display: none;
+  height: 2px;
+  background: var(--accent);
+  pointer-events: none;
+  box-shadow: 0 0 18px 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+:root[data-theme='light'] .end-scan {
+  box-shadow: 0 1px 0 0 var(--ink), 0 0 14px 1px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* ── Rodapé: barra de status do SSMS ──────────────────── */
+
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 0;
+  min-height: 34px;
+  padding: 6px var(--pad);
+  border-top: var(--hair) solid var(--line-2);
+  background: var(--bg-2);
+  color: var(--ink-2);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-bar > span + span::before { content: '·'; margin: 0 12px; color: var(--ink-2); }
+.status-bar__msg { color: var(--ink); }
+.status-bar__copy { margin-left: auto; }
+.status-bar__copy::before { display: none; }
+.status-bar.is-closed .status-bar__msg { color: var(--ink-2); }
+
+@media (max-width: 760px) {
+  .contact__head { grid-template-columns: 1fr; gap: 18px; }
+  .contact__sub { justify-self: start; }
+  .crow { flex-wrap: wrap; }
+  .crow__link { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 14px; min-height: 0; padding: 20px var(--pad); }
+  .crow__link { flex-basis: 100%; }
+  .crow__k { grid-column: 1 / -1; }
+  /* O e-mail é o dado principal: nunca truncado no celular (quebra se precisar, em vez de "…"). */
+  .crow__v { font-size: clamp(1.15rem, 5.6vw, 1.9rem); white-space: normal; overflow-wrap: anywhere; text-overflow: clip; }
+  .crow__copy { position: static; transform: none; margin: -6px var(--pad) 18px; }
+  /* Rodapé enxuto: mensagem · tempo · queries; o resto some no estreito. */
+  .status-bar > span:nth-child(2),
+  .status-bar > span:nth-child(3) { display: none; }
+  .status-bar__copy { margin-left: 0; flex-basis: 100%; } /* ink-3 sobre --bg-2 = 4,38:1 (axe) */
+}

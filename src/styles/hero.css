@@ -589,6 +589,18 @@
   .actions { padding-top: 12px; padding-bottom: 12px; }
 }
 
+/* Janela de navegador com abas e favoritos (~640 px úteis): os botões continuam na dobra. */
+@media (min-width: 761px) and (max-height: 700px) {
+  .cell__tab { height: 26px; }
+  .editor { line-height: 1.4; padding-top: 10px; padding-bottom: 6px; min-height: calc(5 * 1.4em + 16px); }
+  .editor__status { padding-bottom: 8px; }
+  .headline { min-height: 170px; padding-top: 8px; padding-bottom: 10px; }
+  .result th { height: 26px; }
+  .result td { height: 36px; }
+  .actions { padding-top: 8px; padding-bottom: 8px; }
+  .btn { height: 38px; }
+}
+
 /* ── Responsivo ───────────────────────────────────────── */
 
 @media (max-width: 1100px) {

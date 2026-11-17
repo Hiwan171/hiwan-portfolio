@@ -144,6 +144,14 @@ export function mountBi(host: HTMLElement): Mounted {
       .to(dot, { opacity: 1, duration: 0.3 }, '-=0.1');
   };
 
+  // R2: "quadro zero" coerente enquanto a varredura revela a janela (antes: KPIs 0 com barras cheias).
+  if (!reducedMotion()) {
+    setK(0, 0, 0);
+    gsap.set(fills, { scaleX: 0 });
+    gsap.set(line, { strokeDasharray: 1, strokeDashoffset: 1 });
+    gsap.set(dot, { opacity: 0 });
+  }
+
   host.querySelector('[data-replay]')!.addEventListener('click', run);
   return { play: run, destroy() { tl?.kill(); host.innerHTML = ''; } };
 }

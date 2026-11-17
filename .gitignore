@@ -7,3 +7,7 @@ WhatsApp Image*
 *.jpeg
 .venv
 __pycache__
+# vídeos de navegação (revisão local)
+*.mp4
+*.mov
+*.mkv

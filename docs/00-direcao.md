@@ -100,7 +100,8 @@ Regra de corte: qualquer item abaixo de **7/10** na nossa autoavaliação volta 
 2b. Ponte hero → projetos em tela fixa. ✔ (decidido: fluxo vertical; tela fixa só aqui e na trajetória)
 3. Trajetória (`STRING_AGG … GROUP BY ano`). v2 (16/11): **gráfico em degraus** desenhado pelo scroll em tela fixa (substitui as páginas horizontais). ⏳ aprovação.
 2c. Projetos v2 (16/11): **lista | painel EXPLAIN com artefato vivo** (estilo SSMS; substitui a tabela de 5 colunas). ⏳ aprovação.
-4. Contato (`INSERT INTO contato` / `COMMIT`). ⏳ próximo.
+4. Contato (`INSERT INTO dbo.contato` / `COMMIT` desconecta) + rodapé de status. ✔ (revisão 14)
+5. Console SQL (`/`, SQLite real), monitor `sys.dm_exec_sessions`, atalhos do SSMS, link `#projetos/n`. ✔ (revisão 16)
 2. Barra de query fixa + navegação por scroll.
 3. Projetos (`WHERE`) + janela de artefato (começar por um: navegador).
 4. Demais artefatos, um por vez.

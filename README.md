@@ -21,6 +21,10 @@ node scripts/boot-capture.mjs <nome>   # tela de conexão
 node scripts/bridge-capture.mjs <nome> # ponte hero → projetos (tela fixa)
 node scripts/proj-capture.mjs <nome>   # projetos: lista | painel com artefato vivo
 node scripts/path-capture.mjs <nome>   # trajetória (gráfico em degraus, tela fixa)
+node scripts/contact-capture.mjs <nome> # contato + COMMIT + rodapé de status
+node scripts/console-check.mjs <nome> # console SQL, erros T-SQL, filtro, monitor, atalhos, #projetos/n
+node scripts/fix-check.mjs              # quadros zero dos artefatos, scroll do navegador, mobile até o fim
+node scripts/review-sweep.mjs <nome>   # varredura visual do site inteiro
 node scripts/hero-final.mjs            # menu mobile, foco, link ativo, tema
 npx vite build && node scripts/audit.mjs   # auditoria de produção: LCP/CLS, rede lenta, axe, teclado
 node scripts/og-capture.mjs            # imagem de compartilhamento 1200×630 → public/og.png
@@ -41,6 +45,6 @@ python -m venv .venv && .venv/Scripts/python -m pip install -r scripts/photo/req
 
 ## Estrutura
 
-- `src/` — `main.ts` (hero + intro), `preloader.ts` (tela de conexão), `portrait.ts` (WebGL), `bridge.ts` (ponte em tela fixa), `qbar.ts` (barra de query), `projects.ts` + `artifacts/` (lista | painel e artefatos), `path.ts` (trajetória), `i18n.ts` e `path-data.ts` (textos PT/EN).
+- `src/` — `main.ts` (hero + intro), `preloader.ts` (tela de conexão), `portrait.ts` (WebGL), `bridge.ts` (ponte em tela fixa), `qbar.ts` (barra de query), `console.ts` + `sqlengine.ts` (console SQL), `telemetry.ts` (monitor), `projects.ts` + `artifacts/` (lista | painel e artefatos), `path.ts` (trajetória), `i18n.ts` e `path-data.ts` (textos PT/EN).
 - `docs/` — direção, fatos dos cases e da trajetória, revisões de cada etapa.
 - `CLAUDE.md` — contexto completo para continuar com o Claude Code.

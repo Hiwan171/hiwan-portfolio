@@ -8,7 +8,8 @@
  */
 
 /** p: dados espalhados (0) → rosto (1). g: → grade de resultado (1), usada pela ponte em tela fixa. */
-export const portraitState = { p: 0, g: 0 };
+// a: fator de montagem do reconectar (independente de p, que a ponte controla com scrub)
+export const portraitState = { p: 0, g: 0, a: 1 };
 
 /* Grade de resultado (5 linhas × 5 colunas de "texto" em pontos), em coordenadas do modelo.
    Larguras relativas espelham a tabela de projetos: # · projeto · area · stack · resultado. */
@@ -274,7 +275,7 @@ export async function initPortrait(host: HTMLElement): Promise<number> {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(u.res, W, H);
     gl.uniform1f(u.fit, fit);
-    gl.uniform1f(u.p, reduced ? 1 : portraitState.p);
+    gl.uniform1f(u.p, reduced ? 1 : portraitState.p * portraitState.a);
     gl.uniform1f(u.g, portraitState.g);
     gl.uniform1f(u.time, time);
     gl.uniform2f(u.mouse, mouse.x, mouse.y);

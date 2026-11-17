@@ -119,6 +119,8 @@ function build() {
     .fromTo('.bridge-handoff', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.1, immediateRender: false }, T.done)
     // Depois que a query executa, os dados assentam na grade de resultado (5 linhas).
     .to(portraitState, { g: 1, duration: 0.24, ease: 'power1.inOut' }, T.done)
+    // R4: os cantos emolduram uma foto; na grade de resultado sobravam como uma caixa vazia ao rolar.
+    .to('[data-blob] .blob__corner', { opacity: 0, duration: 0.1 }, T.done)
     .fromTo('.bridge-title__sub', { opacity: 0 }, { opacity: 1, duration: 0.12, immediateRender: false }, 0.5)
     .to({}, { duration: T.end - 0.64 }, 0.64); // respiro: a lista sobe por cima do aviso antes de soltar
 }

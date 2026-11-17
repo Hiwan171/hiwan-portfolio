@@ -9,6 +9,8 @@ import './styles/case.css';
 import './styles/projects.css';
 import './styles/artifacts.css';
 import './styles/path.css';
+import './styles/contact.css';
+import './styles/console.css';
 
 import { gsap } from 'gsap';
 import { dict, currentLang, type Lang, type Tok } from './i18n';
@@ -19,6 +21,8 @@ import { initSections, renderProjects, paintQbar } from './sections';
 import { resetCases } from './projects';
 import { initBridge, rebuildBridge, bridgeActive, bridgeProgress } from './bridge';
 import { renderPath } from './path';
+import { renderContact } from './contact';
+import { renderConsole } from './console';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const root = document.documentElement;
@@ -199,6 +203,8 @@ $('[data-action="lang"]').addEventListener('click', () => {
   resetCases();
   renderProjects();
   renderPath();
+  renderContact();
+  renderConsole();
   ScrollTrigger.refresh(); // larguras das páginas mudam com o idioma
   paintQbar();
   savePrefs();

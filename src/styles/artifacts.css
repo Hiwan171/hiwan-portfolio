@@ -43,6 +43,8 @@
   border-top: var(--hair) solid var(--line);
   font-size: 0.8125rem;
 }
+/* R1: o display:flex acima anulava o atributo hidden (a campanha aparecia "concluída" desde o início). */
+.q__done[hidden] { display: none; }
 .q__ok { font-weight: 600; }
 .q__vendor { color: var(--ink-2); }
 .q__vendor mark { background: var(--accent); color: var(--accent-ink); padding: 0 4px; }
@@ -90,6 +92,8 @@
 .v__chip.is-pago { color: var(--ink-2); }
 
 .v__export {
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -99,6 +103,7 @@
   font-size: 0.75rem;
 }
 .v__file { color: var(--ink-2); }
+.v__export.is-on { opacity: 1; }
 .v__btn { height: 32px; transition: transform 0.12s var(--ease-out), background-color 0.2s; }
 .v__btn.is-pressed { transform: scale(0.95); background: var(--ink); border-color: var(--ink); color: var(--bg); }
 
@@ -187,7 +192,37 @@
 .br__lock { font-size: 0.5rem; color: var(--ink-3); }
 .br__open { margin-left: auto; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 
-.br__view { height: 400px; overflow-y: auto; overscroll-behavior: contain; background: #0b0b0b; scrollbar-width: thin; }
+/* R3: solta = overflow hidden (a roda/dedo passam para a página; o auto-scroll usa scrollTop, que funciona igual).
+   Engatada = rola o site dentro da janela. */
+.br__frame { position: relative; }
+.br__view { height: 400px; overflow: hidden; background: #0b0b0b; scrollbar-width: thin; }
+.br__frame.is-engaged .br__view { overflow-y: auto; overscroll-behavior: contain; }
+
+/* O botão cobre a janela inteira (alvo grande); o chip é o rótulo visível. */
+.br__engage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  background: transparent;
+  cursor: pointer;
+}
+.br__engage:focus-visible { outline-offset: -4px; }
+
+.br__chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(18, 17, 16, 0.84);
+  color: #ebe5d9;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(6px);
+  transition: background-color 0.25s var(--ease-out), transform 0.4s var(--ease-out);
+}
+.br__engage:hover .br__chip { background: rgba(18, 17, 16, 0.95); transform: translateY(-2px); }
+.br__frame.is-engaged .br__engage { display: none; }
 .br__view img { display: block; width: 100%; height: auto; }
 
 @media (max-width: 760px) {

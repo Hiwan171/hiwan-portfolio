@@ -111,7 +111,10 @@ export function mountView(host: HTMLElement): Mounted {
       .join('')}</tbody></table>`;
 
   let tl: gsap.core.Timeline | null = null;
+  // R2: o rodapé "Exportar .xls" só existe depois que há resultado para exportar.
+  const exportRow = host.querySelector<HTMLElement>('.v__export')!;
   const reset = () => {
+    exportRow.classList.remove('is-on');
     $('code').innerHTML = '';
     host.querySelector<HTMLElement>('.v__code')!.scrollTop = 0;
     $('select').innerHTML = '';
@@ -131,6 +134,7 @@ export function mountView(host: HTMLElement): Mounted {
     $('select').innerHTML = tokensHtml(select);
     $('st').textContent = `✓ ${s0.ok}`;
     $('grid').innerHTML = grid();
+    exportRow.classList.add('is-on');
     $('file').innerHTML = `<b>${s0.view.replace('dbo.', '')}.xlsx</b> · ${s0.saved}`;
   };
 
@@ -147,6 +151,7 @@ export function mountView(host: HTMLElement): Mounted {
       .call(() => {
         $('st').textContent = `✓ ${s0.ok}`;
         $('grid').innerHTML = grid();
+        exportRow.classList.add('is-on');
         gsap.from(host.querySelectorAll('.v__grid tbody tr'), { opacity: 0, x: -6, duration: 0.4, stagger: 0.06, ease: 'expo.out' });
       }, undefined, '+=0.35')
       .call(() => $('btn').classList.add('is-pressed'), undefined, '+=1')
@@ -156,6 +161,9 @@ export function mountView(host: HTMLElement): Mounted {
         gsap.from($('file'), { opacity: 0, x: 8, duration: 0.5, ease: 'expo.out' });
       }, undefined, '+=0.18');
   };
+
+  // R2: quadro zero = janela de consulta nova, cursor piscando (antes: editor e grade em branco).
+  $('code').innerHTML = caret;
 
   host.querySelector('[data-replay]')!.addEventListener('click', run);
   return { play: run, destroy() { tl?.kill(); host.innerHTML = ''; } };

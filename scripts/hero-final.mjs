@@ -58,7 +58,7 @@ try {
     await p.screenshot({ path: `${out}/d-theme-mid.png` });
     await p.waitForTimeout(700);
     await p.click('.bar__nav a[href="#projetos"]');
-    await p.waitForTimeout(1900);
+    await p.waitForTimeout(3000); // hero → projetos rola pela ponte (2,4 s)
     const current = await p.evaluate(() => document.querySelector('.bar__nav a[aria-current="true"]')?.getAttribute('href'));
     const projTopDesktop = await p.evaluate(() => Math.round(document.querySelector('#projetos').getBoundingClientRect().top));
     console.log('desktop projTop (esperado 92):', projTopDesktop);

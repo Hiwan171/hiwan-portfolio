@@ -129,6 +129,9 @@ export function mountTerminal(host: HTMLElement): Mounted {
       .call(summary, undefined, '+=0.2');
   };
 
+  // R2: antes de rodar, um prompt esperando (não uma janela preta vazia).
+  line(`<span class="pr">$</span> <span class="caret"></span>`);
+
   host.querySelector('[data-replay]')!.addEventListener('click', run);
   return {
     play: run,

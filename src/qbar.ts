@@ -58,6 +58,12 @@ export const scenes = {
 let current: Scene = scenes.hero;
 let tl: gsap.core.Timeline | null = null;
 
+/** Quantas queries a navegação do visitante "executou" (a do hero conta como a 1ª). Lido pelo rodapé. */
+let executed = 1;
+export const queriesExecuted = () => executed;
+/** Queries digitadas no console também contam (o rodapé e o monitor mostram o total). */
+export const bumpExecuted = () => ++executed;
+
 export const qbarEl = () => $<HTMLElement>('.qbar');
 
 /** Desenha a cena atual sem animação (troca de idioma, reduced-motion). */
@@ -71,6 +77,7 @@ export function goScene(next: Scene) {
   const from = current.query();
   const to = next.query();
   current = next;
+  executed++;
   tl?.kill();
   if (reduced) return paintQbar();
 
@@ -91,8 +98,10 @@ export const currentScene = () => current;
 
 /** Troca de cena sem animação (a ponte em tela fixa já mostrou a reescrita no editor do hero). */
 export function setScene(next: Scene) {
-  if (next.id === current.id) return;
+  // Mesmo com a mesma cena: mata uma digitação em andamento (o salto por consulta dispara gatilhos
+  // de scroll que começam a redigitar a cena por trás da cortina) e pinta o estado final.
   tl?.kill();
+  if (next.id !== current.id) executed++;
   current = next;
   paintQbar();
 }

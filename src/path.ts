@@ -241,6 +241,9 @@ function initTips() {
     tip.innerHTML = `<b>${best.year} · ${esc(d.kinds[best.kind])}</b><strong>${esc(best.title)}</strong><span>${esc(best.where)}</span>`;
     const w = tip.offsetWidth;
     tip.style.left = `${Math.min(Math.max(best.x - w / 2, 8), r.width - w - 8)}px`;
+    // Perto do topo do gráfico a dica abre para baixo (no vídeo, ela saía cortada por cima).
+    const below = best.y - tip.offsetHeight - 24 < 0;
+    tip.classList.toggle('is-below', below);
     tip.style.top = `${best.y}px`;
     tip.classList.add('is-on');
   });

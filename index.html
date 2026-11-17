@@ -104,12 +104,15 @@
         <a href="#projetos" data-i18n="nav.projects"></a>
         <a href="#trajetoria" data-i18n="nav.path"></a>
         <a href="#contato" data-i18n="nav.contact"></a>
-      </nav>
+    </nav>
       <div class="bar__tools">
         <!-- Nome acessível contém o texto visível (WCAG 2.5.3) + a ação em texto oculto. -->
         <button class="chip" type="button" data-action="lang">
           <span class="kw">SET</span> LANG = <span class="str" data-lang-label></span>
           <span class="sr-only" data-i18n="a11y.lang"></span>
+        </button>
+        <button class="chip chip--console" type="button" data-action="console" aria-keyshortcuts="/" aria-controls="console">
+          <span aria-hidden="true">&gt;_</span><span data-console-open-label></span><kbd aria-hidden="true">/</kbd>
         </button>
         <button class="chip chip--icon" type="button" data-action="theme">
           <span class="theme-glyph" aria-hidden="true"></span>
@@ -127,6 +130,7 @@
       <a href="#projetos" class="menu__item"><span aria-hidden="true">▦</span><span>dbo.<span data-i18n="boot.tree.t1"></span></span></a>
       <a href="#trajetoria" class="menu__item"><span aria-hidden="true">▦</span><span>dbo.<span data-i18n="boot.tree.t2"></span></span></a>
       <a href="#contato" class="menu__item"><span aria-hidden="true">▦</span><span>dbo.<span data-i18n="boot.tree.t3"></span></span></a>
+      <button class="menu__item menu__item--btn" type="button" data-action="console"><span aria-hidden="true">&gt;_</span><span>console SQL</span></button>
     </nav>
 
     <main>
@@ -184,10 +188,16 @@
             <p class="sec__sub" data-i18n="proj.sub"></p>
           </div>
         </header>
+        <!-- Filtro vindo do console SQL (WHERE em dbo.projetos) -->
+        <div class="proj__filter" data-proj-filter role="status" hidden>
+          <code data-proj-filter-q></code>
+          <span data-proj-filter-n></span>
+          <button class="sbtn sbtn--ghost" type="button" data-proj-filter-clear></button>
+        </div>
         <div class="proj" data-proj>
           <ol class="proj__list" data-proj-list></ol>
           <aside class="proj__pane" id="proj-pane" data-proj-pane>
-            <div class="cell__tab"><span data-pane-tab></span><span class="cell__tab-meta" data-pane-count></span></div>
+            <div class="cell__tab"><span data-pane-tab></span><span class="cell__tab-meta"><button class="pane__link" type="button" data-copy-link></button><span data-pane-count></span></span></div>
             <div class="proj__stage" data-pane-stage>
               <div class="proj__fit" data-pane-fit></div>
               <span class="proj__scan" aria-hidden="true" data-pane-scan></span>
@@ -216,7 +226,79 @@
           <ol class="sr-only" data-path-list></ol>
         </div>
       </section>
+
+      <!-- Seção 4: contato (INSERT INTO dbo.contato) e o final: COMMIT desconecta a sessão. -->
+      <section class="sec sec--contact" id="contato" aria-labelledby="contact-title">
+        <div class="cell__tab"><span data-contact-table></span><span class="cell__tab-meta" data-contact-count></span></div>
+        <div class="contact__head">
+          <h2 class="contact__title" id="contact-title" data-contact-title></h2>
+          <p class="contact__sub" data-contact-sub></p>
+        </div>
+        <ul class="contact__rows" data-contact-rows></ul>
+        <div class="contact__commit">
+          <button class="btn btn--primary contact__btn" type="button" data-commit>
+            <span class="btn__glyph" aria-hidden="true">▸</span><span>COMMIT</span>
+          </button>
+          <span class="contact__hint" data-contact-hint></span>
+          <div class="contact__end" data-contact-end role="status" hidden>
+            <strong data-contact-end-title></strong>
+            <span data-contact-end-text></span>
+            <button class="sbtn" type="button" data-reconnect></button>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <!-- Rodapé = barra de status do SSMS (tempo real de sessão + queries executadas pela navegação). -->
+    <footer class="status-bar" data-status-bar>
+      <span class="status-bar__msg" data-status-msg></span>
+      <span>hiwan.db</span>
+      <span data-status-user></span>
+      <span class="status-bar__time" data-status-time>00:00:00</span>
+      <span data-status-q></span>
+      <button class="status-bar__mon" type="button" data-monitor>sys.dm_exec_sessions ▸</button>
+      <span class="status-bar__copy">© 2026 Hiwan Alves</span>
+    </footer>
+    <span class="end-scan" aria-hidden="true"></span>
+
+    <!-- Query jump: navegação longa vira uma consulta (cortina + query digitada + salto). -->
+    <div class="jump-wrap" data-jump aria-hidden="true" hidden>
+      <div class="jump">
+        <div class="jump__inner">
+          <span class="jump__label">query.sql</span>
+          <code class="jump__code" data-jump-code></code>
+          <span class="jump__status" data-jump-status></span>
+        </div>
+      </div>
+      <span class="jump__scan"></span>
+    </div>
+
+    <!-- Console SQL: janela de consulta do SSMS (abre com /). SQLite real no navegador, carregado sob demanda. -->
+    <section class="console" id="console" data-console data-lenis-prevent aria-labelledby="console-title" hidden>
+      <div class="console__bar">
+        <span class="console__title" id="console-title" data-console-title></span>
+        <span class="console__keys" data-console-keys></span>
+        <button class="chip chip--icon console__x" type="button" data-console-close>✕</button>
+      </div>
+      <div class="console__editor">
+        <pre class="console__hl" aria-hidden="true"><code data-console-hl></code></pre>
+        <textarea class="console__input" data-console-input spellcheck="false" autocapitalize="off" autocomplete="off" rows="4"></textarea>
+      </div>
+      <div class="console__actions">
+        <button class="btn btn--primary console__run" type="button" data-console-run aria-keyshortcuts="F5 Control+Enter"><span class="btn__glyph" aria-hidden="true">▸</span><span data-console-run-label></span></button>
+        <div class="console__examples" data-console-examples></div>
+      </div>
+      <div class="console__out">
+        <div class="console__tabs" role="tablist">
+          <button type="button" role="tab" data-console-tab="results" aria-selected="true"></button>
+          <button type="button" role="tab" data-console-tab="messages" aria-selected="false"></button>
+          <span class="console__tables" data-console-tables></span>
+        </div>
+        <div class="console__pane" data-console-results role="tabpanel" tabindex="0"></div>
+        <div class="console__pane" data-console-messages role="tabpanel" tabindex="0" hidden></div>
+      </div>
+      <p class="console__status" data-console-status role="status"></p>
+    </section>
 
     <!-- Barra de query fixa: aparece quando o editor do hero sai da tela e reescreve a query por seção. -->
     <div class="qbar" aria-hidden="true">

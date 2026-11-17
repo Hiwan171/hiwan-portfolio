@@ -15,7 +15,8 @@ O site é uma consulta SQL que executa conforme a navegação. O visitante nunca
 3. **Ponte em tela fixa** (só desktop): o editor reescreve para a query de projetos; o rosto vira dados e depois uma **grade de resultado**; `dbo.projetos` sobe no lugar da headline.
 4. **Projetos** (v2, 16/11): como o SSMS — lista de 5 linhas (nome + número de impacto gigante) | painel `EXPLAIN · id = n` preso ao lado com o artefato rodando ao vivo (terminal, fila de e-mail, view SQL + .xls, dashboard Power BI, navegador com as 4 landing pages reais) e o caso em 3 colunas. A linha no meio da tela fica ativa e a barra de query vira `WHERE id = n`. ≤1100px: artefato dentro de cada linha.
 5. **Trajetória** (2º e último momento em tela fixa; v2, 16/11): `STRING_AGG … GROUP BY ano` como **gráfico em degraus** (estudante → sênior) desenhado pelo scroll, ano gigante em odômetro, eventos como pontos e linha de resultado com o `STRING_AGG` do ano.
-6. **Contato**: `INSERT INTO dbo.contato` / botão `COMMIT`. **PRÓXIMO PASSO** (ver pendências).
+6. **Contato** (feito, revisão 14): `INSERT INTO dbo.contato` só com links (e-mail hiwan799@gmail.com com copiar, LinkedIn, GitHub); botão `COMMIT` desconecta a sessão; rodapé = barra de status do SSMS (tempo real + queries).
+7. **Console SQL** (revisão 16): `/` abre uma janela de consulta do SSMS com SQLite real (sql.js, carregado sob demanda) e sotaque de T-SQL; erros `Msg 207/208/102`; visitante só lê (`Msg 229/3701`); consulta em `dbo.projetos` filtra a lista. **Monitor**: `sys.dm_exec_sessions` com dados reais da visita (rodapé). **Atalhos** do SSMS (F5, Ctrl+Enter, Ctrl+R, Esc, ?). **Link por caso**: `#projetos/3`.
 
 Fluxo geral vertical; tela fixa SÓ na ponte e na trajetória (decisão do Hiwan).
 
@@ -47,6 +48,17 @@ Tokens em `src/styles/tokens.css`: grafite/papel, **um** acento lima `#c8f23a` u
 - `1fr` não encolhe abaixo do conteúdo: usar `minmax(0,1fr)`.
 - `HTMLElement.hidden` pode ser `"until-found"` no TS novo.
 - Fim de página curta faz âncoras pararem antes do alvo (não é bug).
+- `display:flex`/`grid` no CSS anula o atributo `hidden`: sempre `.x[hidden] { display:none }`.
+- Artefatos precisam de um "quadro zero" coerente: são revelados (varredura) antes do `play()`.
+- No mobile os artefatos são montados no carregamento para medir altura: nada de baixar mídia na montagem antes do `load` (segura a tela de conexão).
+- Janelas roláveis dentro da página (navegador do caso 5) não podem capturar a roda/dedo por padrão: engatar por clique.
+- `querySelector("#projetos/3")` lança erro: tratar âncoras de caso antes.
+- sql.js `getRowsModified()` é da última instrução (não cumulativo).
+- `.btn` no mobile do hero é `flex:1`: botões em outros contextos precisam de `flex:none`.
+- Toda query exibida na barra precisa rodar no console (tabelas têm colunas de apoio: `foco`, `impacto`).
+- Testar sempre em ~1376×640 (notebook com abas e favoritos), não só 1440×900: `node scripts/short-check.mjs` (revisão 17).
+- Reconstruir a lista de projetos (troca de idioma) limpa o filtro do console.
+- Playwright: `locator.screenshot()` rola até o elemento (troca a linha ativa do painel sticky) → usar `page.screenshot({clip})`; `page.click()` salta o scroll e briga com o Lenis → rolar com a roda e `page.mouse.click()`.
 - **Não usar `pin` do GSAP no hero**: ele tira e devolve o nó ao DOM a cada refresh e o Chrome reconta a headline como conteúdo novo (LCP ia para o fim da intro). A ponte é `position: sticky` em `.hero-spacer`; a altura extra vem de um `::after` (o sticky fica preso à caixa de CONTEÚDO do pai: `padding` não conta).
 - `invalidateOnRefresh` + `gsap.to()` regrava o valor inicial no meio da rolagem: usar `fromTo` ou não invalidar (start/end em função já são recalculados em todo refresh).
 - Conteúdo que monta/desmonta no scroll precisa de altura reservada, senão a página muda de tamanho e o scroll pula (artefatos no mobile).
@@ -54,7 +66,7 @@ Tokens em `src/styles/tokens.css`: grafite/papel, **um** acento lima `#c8f23a` u
 
 ## Pendências
 
-1. **Seção 4 — contato**: perguntar ao Hiwan quais canais (e-mail profissional, WhatsApp, LinkedIn, GitHub) e se o formulário envia de verdade (ex.: Formspree) ou só links.
+1. ~~Seção 4 — contato~~ feita (revisão 14).
 2. Foto de frente (parede lisa, sem celular) → regerar retrato com `scripts/photo/prepare.py`.
 3. ~~Imagem OG~~ feita (`public/og.png`, `scripts/og-capture.mjs`). No deploy: `SITE_URL=https://dominio npm run build` (canonical/og:url/og:image absolutos).
 4. Deploy (domínio) e submissões.

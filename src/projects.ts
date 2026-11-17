@@ -54,6 +54,9 @@ export function renderProjects() {
   $('[data-proj-name]').textContent = table.replace('dbo.', '');
   $('[data-proj-count]').textContent = `${p.rows.length} ${t['proj.rows']}`;
   $('[data-proj-pane]').setAttribute('aria-label', t['proj.pane']);
+  // A lista é reconstruída (troca de idioma): o filtro do console era de uma consulta no outro idioma.
+  // Sem isso o aviso "3 de 5 linhas" ficava na tela com as 5 linhas visíveis (visto no vídeo do Hiwan).
+  $<HTMLElement>('[data-proj-filter]').hidden = true;
 
   $('[data-proj-list]').innerHTML = p.rows
     .map((r, i) => {
@@ -126,6 +129,7 @@ function setActive(i: number, animate = true) {
     el.querySelector('.prow__btn')!.setAttribute('aria-pressed', String(j === i));
   });
   $('[data-pane-tab]').textContent = `explain · id = ${i + 1}`;
+  $('[data-copy-link]').textContent = t['proj.copyLink'];
   $('[data-pane-count]').textContent = `${pad2(i + 1)} / ${pad2(p.rows.length)}`;
   const explain = $<HTMLElement>('[data-pane-explain]');
   const box = $<HTMLElement>('[data-pane-fit]');
@@ -252,6 +256,53 @@ function bind() {
   }
 }
 
+// ── Link por caso e filtro do console ────────────────────
+
+const caseUrl = (i: number) => `${location.origin}${location.pathname}#projetos/${i + 1}`;
+
+/** Leva ao caso i (0-based): desktop ativa e centraliza a linha; estreito rola até ela. */
+export function goToCase(i: number) {
+  const row = rowsEls()[i];
+  if (!row) return;
+  if (row.hidden) setProjectFilter(null);
+  const wide = matchMedia(WIDE).matches;
+  if (wide) {
+    setActive(i);
+    goScene(scenes.case(i + 1));
+  }
+  history.replaceState(null, '', `#projetos/${i + 1}`);
+  const offset = wide ? -(innerHeight * 0.55 - row.offsetHeight / 2) : -100;
+  const l = getLenis();
+  if (l) l.scrollTo(row, { offset, duration: 1.1 });
+  else scrollTo({ top: row.getBoundingClientRect().top + scrollY + offset });
+}
+
+/** `#projetos/3` (ou `#projects/3`) abre o caso 3. */
+export function openFromHash() {
+  const m = location.hash.match(/^#(?:projetos|projects)\/(\d+)$/);
+  if (m) goToCase(Number(m[1]) - 1);
+}
+
+/** Filtro real vindo do console: só as linhas selecionadas pela consulta ficam na lista. */
+export function setProjectFilter(ids: number[] | null, query = '') {
+  const box = $<HTMLElement>('[data-proj-filter]');
+  const rows = rowsEls();
+  const t = dict[currentLang()].text;
+  if (ids && ids.length === rows.length) ids = null; // a consulta trouxe todas as linhas: não há filtro
+  rows.forEach((r, i) => (r.hidden = !!ids && !ids.includes(i + 1)));
+  box.hidden = !ids;
+  if (ids) {
+    $('[data-proj-filter-q]').textContent = query.replace(/\s+/g, ' ').trim();
+    $('[data-proj-filter-n]').textContent = t['proj.filterN'].replace('{n}', String(ids.length)).replace('{t}', String(rows.length));
+    $('[data-proj-filter-clear]').textContent = t['proj.filterClear'];
+  }
+  ScrollTrigger.refresh();
+  if (matchMedia(WIDE).matches) {
+    const first = rows.findIndex((r) => !r.hidden);
+    if (first >= 0 && rows[active]?.hidden) setActive(first);
+  }
+}
+
 export function initCases(lenis: () => Lenis | null) {
   getLenis = lenis;
   started = true;
@@ -260,15 +311,23 @@ export function initCases(lenis: () => Lenis | null) {
   $('[data-proj-list]').addEventListener('click', (e) => {
     const btn = (e.target as Element).closest('.prow__btn');
     if (!btn || !matchMedia(WIDE).matches) return;
-    const row = btn.closest<HTMLElement>('.prow')!;
-    const i = Number(row.dataset.i);
-    setActive(i);
-    goScene(scenes.case(i + 1));
-    const offset = -(innerHeight * 0.55 - row.offsetHeight / 2);
-    const l = getLenis();
-    if (l) l.scrollTo(row, { offset, duration: 1.1 });
-    else scrollTo({ top: row.getBoundingClientRect().top + scrollY + offset });
+    goToCase(Number(btn.closest<HTMLElement>('.prow')!.dataset.i));
   });
+
+  // Copiar link do caso ativo (#projetos/n)
+  $('[data-copy-link]').addEventListener('click', async (e) => {
+    const b = e.currentTarget as HTMLButtonElement;
+    try {
+      await navigator.clipboard.writeText(caseUrl(Math.max(0, active)));
+    } catch {
+      return;
+    }
+    const t = dict[currentLang()].text;
+    b.textContent = t['proj.linkCopied'];
+    setTimeout(() => (b.textContent = t['proj.copyLink']), 1800);
+  });
+  $('[data-proj-filter-clear]').addEventListener('click', () => setProjectFilter(null));
+  addEventListener('hashchange', openFromHash);
 
   const mm = gsap.matchMedia();
   mm.add({ wide: WIDE, narrow: '(max-width: 1100px)' }, () => {

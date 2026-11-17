@@ -5,6 +5,14 @@ import { goScene, paintQbar, qbarEl, scenes, currentScene } from './qbar';
 import { renderProjects, initCases } from './projects';
 import { bridgeActive } from './bridge';
 import { initPath } from './path';
+import { initContact, contactScene } from './contact';
+import { jump } from './jump';
+
+/** Cena da barra de query para cada seção (a query que o salto digita). */
+const sceneFor = (id: string) =>
+  id === 'projetos' ? scenes.projects : id === 'trajetoria' ? scenes.path : id === 'contato' ? contactScene : scenes.hero;
+import { initConsole } from './console';
+import { openFromHash, goToCase } from './projects';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,11 +41,29 @@ export function initSections(opts: { bootDone: Promise<void> }) {
   document.addEventListener('click', (e) => {
     const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
     if (!a) return;
-    const target = document.querySelector(a.getAttribute('href')!);
+    const href = a.getAttribute('href')!;
+    const caseLink = href.match(/^#(?:projetos|projects)\/(\d+)$/);
+    if (caseLink) {
+      e.preventDefault();
+      goToCase(Number(caseLink[1]) - 1);
+      return;
+    }
+    let target: Element | null = null;
+    try {
+      target = document.querySelector(href);
+    } catch {
+      return;
+    }
     if (!target) return;
     e.preventDefault();
-    if (lenis) lenis.scrollTo(target as HTMLElement, { duration: 1.4 });
-    else target.scrollIntoView();
+    const el = target as HTMLElement;
+    const dist = Math.abs(el.getBoundingClientRect().top - 92);
+    // Hero → projetos rola: a ponte (rosto → dados → resultado) é a transição, e é melhor que um salto.
+    const throughBridge = el.id === 'projetos' && bridgeActive() && scrollY < el.offsetTop - innerHeight;
+    if (!lenis) el.scrollIntoView();
+    else if (throughBridge) lenis.scrollTo(el, { duration: 2.4, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    else if (dist < innerHeight * 1.2) lenis.scrollTo(el, { duration: 1 });
+    else jump({ target: el, lenis, scene: sceneFor(el.id) });
   });
 
   // Barra de query aparece quando o editor do hero sai por baixo da barra de conexão.
@@ -96,4 +122,8 @@ export function initSections(opts: { bootDone: Promise<void> }) {
 
   initCases(() => lenis);
   initPath();
+  initContact(() => lenis);
+  initConsole();
+  // Link direto para um caso (#projetos/3): depois da tela de conexão e da intro.
+  opts.bootDone.then(() => setTimeout(openFromHash, 600));
 }

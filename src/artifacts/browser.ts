@@ -17,8 +17,8 @@ const SITES = [
 ];
 
 const L = {
-  pt: { open: 'abrir site ↗', alt: 'Página inicial do site', note: 'capturas reais · role dentro da janela ou troque de aba', sr: 'Quatro landing pages em React, uma por marca do grupo: Colefar, Ambientec, Colenorte e Biocoletas.' },
-  en: { open: 'open site ↗', alt: 'Home page of', note: 'real captures · scroll inside the window or switch tabs', sr: 'Four React landing pages, one per group brand: Colefar, Ambientec, Colenorte and Biocoletas.' },
+  pt: { open: 'abrir site ↗', alt: 'Página inicial do site', engage: '↕ clique para navegar no site', note: 'capturas reais · clique na janela para rolar o site ou troque de aba', sr: 'Quatro landing pages em React, uma por marca do grupo: Colefar, Ambientec, Colenorte e Biocoletas.' },
+  en: { open: 'open site ↗', alt: 'Home page of', engage: '↕ click to browse the site', note: 'real captures · click the window to scroll the site, or switch tabs', sr: 'Four React landing pages, one per group brand: Colefar, Ambientec, Colenorte and Biocoletas.' },
 };
 
 export function mountBrowser(host: HTMLElement): Mounted {
@@ -40,8 +40,11 @@ export function mountBrowser(host: HTMLElement): Mounted {
         <span>https://<b data-k="url">${SITES[0].url}</b></span>
         <a class="br__open" data-k="open" href="https://${SITES[0].url}" target="_blank" rel="noopener">${s.open}</a>
       </div>
-      <div class="br__view" data-k="view" data-lenis-prevent tabindex="0" role="tabpanel">
-        <img data-k="img" alt="${s.alt} ${SITES[0].name}" decoding="async" />
+      <div class="br__frame">
+        <div class="br__view" data-k="view" role="tabpanel" tabindex="-1">
+          <img data-k="img" alt="${s.alt} ${SITES[0].name}" decoding="async" />
+        </div>
+        <button class="br__engage" type="button" data-k="engage"><span class="br__chip">${s.engage}</span></button>
       </div>`,
   });
   host.querySelector('.win__bar')!.remove(); // a barra de abas já é o "título"
@@ -84,10 +87,49 @@ export function mountBrowser(host: HTMLElement): Mounted {
   };
 
   tabs.forEach((t) => t.addEventListener('click', () => { stop(); show(Number(t.dataset.i)); }));
-  // O visitante assumiu: rolagem automática para.
-  ['wheel', 'touchstart', 'keydown'].forEach((ev) => view.addEventListener(ev, stop, { passive: true }));
-  host.querySelector('[data-replay]')!.addEventListener('click', run);
 
-  img.addEventListener('load', preload, { once: true });
-  return { play: run, destroy() { stop(); host.innerHTML = ''; } };
+  /* R3 — sem armadilha de scroll. Solta, a janela não captura a roda nem o dedo: a página rola por
+     trás (no celular ela ocupa ~40% da tela). Um clique/toque/Enter "engata": aí sim o scroll é do
+     site dentro da janela (o Lenis ignora via data-lenis-prevent). Tirar o mouse, tocar fora ou Esc solta. */
+  const frame = host.querySelector<HTMLElement>('.br__frame')!;
+  const engageBtn = $<HTMLButtonElement>('engage');
+  const engage = () => {
+    stop();
+    frame.classList.add('is-engaged');
+    view.setAttribute('data-lenis-prevent', '');
+    view.tabIndex = 0;
+    view.focus({ preventScroll: true });
+  };
+  const release = () => {
+    if (!frame.classList.contains('is-engaged')) return;
+    frame.classList.remove('is-engaged');
+    view.removeAttribute('data-lenis-prevent');
+    view.tabIndex = -1;
+  };
+  engageBtn.addEventListener('click', engage);
+  frame.addEventListener('mouseleave', release);
+  const outside = (e: Event) => !frame.contains(e.target as Node) && release();
+  document.addEventListener('touchstart', outside, { passive: true });
+  view.addEventListener('keydown', (e) => e.key === 'Escape' && (release(), engageBtn.focus()));
+
+  host.querySelector('[data-replay]')!.addEventListener('click', () => { release(); run(); });
+
+  // R2: a janela já nasce com a 1ª marca (antes: preta até rodar).
+  // Mas só DEPOIS do load da página: no mobile os artefatos são montados no carregamento para medir
+  // a altura, e baixar a captura ali segurava a tela de conexão (rede lenta: 6,8 s → 14,9 s).
+  let alive = true;
+  const firstPaint = () => alive && !img.getAttribute('src') && show(0);
+  if (document.readyState === 'complete') firstPaint();
+  else addEventListener('load', firstPaint, { once: true });
+  img.addEventListener('load', () => alive && preload(), { once: true }); // desmontado não pré-carrega
+  return {
+    play: run,
+    destroy() {
+      alive = false;
+      stop();
+      removeEventListener('load', firstPaint);
+      document.removeEventListener('touchstart', outside);
+      host.innerHTML = '';
+    },
+  };
 }
